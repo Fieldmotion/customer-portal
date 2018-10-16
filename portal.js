@@ -55,10 +55,10 @@ fm.fns.initialise=function() {
 	fm.client_id=+fm.$wrapper.data('cid');
 	fm.url=fm.$wrapper.data('url')||'https://customer-api.fieldmotion.com/';
 	fm.scriptUrl=fm.$wrapper.prop('src').replace(/\/[^\/]*$/, '');
-	console.log(fm.scriptUrl);
 	fm.$wrapper.replaceWith('<div id="fm-customer-portal"></div>');
 	fm.$wrapper=$('#fm-customer-portal');
 	fm.fns.checkLoginStatus();
+	$('<style>@import "'+fm.scriptUrl+'/style.css";</style>').appendTo('head');
 };
 fm.fns.pageLogin=function() {
 	var $login=$('<table>'
@@ -97,6 +97,27 @@ fm.fns.pageMain=function() {
 		fm.fns.showJobsList();
 	});
 };
+fm.fns.requireDataTables=function(callback) {
+	if ($.fn.DataTable) {
+		return callback();
+	}
+	$('<link rel="stylesheet" href="//cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>').appendTo('head');
+	$.cachedScript('//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js');
+	function wait() {
+		if ($.fn.DataTable) {
+			function resizeDatatables() {
+				var tables=$.fn.dataTable.fnTables(true);
+				if (tables.length>0) {
+					$(tables).dataTable().fnAdjustColumnSizing();
+				}
+			}
+			setTimeout(resizeDatatables, 100);
+			return callback();
+		}
+		setTimeout(wait, 1);
+	}
+	wait();
+}
 fm.fns.whenFunctionsExist=function(fns, callback) {
 	function checkOrLoop() {
 		var missing=0;
@@ -128,6 +149,14 @@ window.addEventListener('load', function() {
 	function waitForjQuery() {
 		if (typeof jQuery==='undefined') {
 			return setTimeout(waitForjQuery, 1);
+		}
+		$.cachedScript = function( url, options ) {
+			options = $.extend( options || {}, {
+				dataType: "script",
+				cache: true,
+				url: url
+			});
+			return $.ajax( options );
 		}
 		fm.fns.initialise();
 	}
