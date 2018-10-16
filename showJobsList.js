@@ -1,4 +1,6 @@
 fm.fns.showJobsList=function() {
+	$('#fm-menu a').removeClass('fm-selected');
+	$('#fm-menu a.fm-link-list').addClass('fm-selected');
 	if (!fm.job_statuses) { // make sure page knows the Statuses list
 		$.post(fm.url+'Jobs/listStatuses.php', fm.fns.getPayLoad(), function(ret) {
 			fm.job_statuses=ret.statuses;
@@ -7,9 +9,9 @@ fm.fns.showJobsList=function() {
 		return;
 	}
 	fm.fns.requireDataTables(function() {
-		var $content=fm.$wrapper.find('#fm-content').empty();
+		var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1>');
 		// { build table HTML
-		var $tableDom=$('<table><thead>'
+		var $tableDom=$('<table style="width:100%"><thead>'
 			+'<tr><th>ID</th>'
 			+'<th>Customer</th>'
 			+'<th title="Job Reference">Ref.</th><th>Priority</th>'
@@ -33,26 +35,64 @@ fm.fns.showJobsList=function() {
 		var $table=$tableDom.DataTable({
 			'ajax':(data, callback, settings)=>{
 				delete data.columns;
+				data.job_ref=$('#fm-filter-job-ref').val();
+				data.status=$('#fm-filter-status').val();
 				$.post(fm.url+'Jobs/getDT.php', fm.fns.getPayLoad(data), callback);
 			},
 			'columns':[ // {
-				{'width':'1%', 'class':'fm-col-id'},
-				{'width':'15%', 'class':'fm-col-customer'},
-				{'width':'6%', 'class':'fm-col-ref'},
-				{'width':'6%', 'class':'fm-col-priority', 'orderable':false},
-				{'width':'15%', 'class':'fm-col-notes', 'orderable':false},
-				{'width':'10%', 'class':'fm-col-created'},
-				{'width':'10%', 'class':'fm-col-due'},
-				{'width':'10%', 'class':'fm-col-job_date'},
-				{'width':'6%', 'class':'fm-col-dept'},
-				{'width':'6%', 'class':'fm-col-user'},
-				{'width':'10%', 'class':'fm-col-status', 'orderable':false},
-				{'width':'4%', 'class':'fm-col-other', 'orderable':false},
+				{'class':'fm-col-id'},
+				{'class':'fm-col-customer'},
+				{'class':'fm-col-ref'},
+				{'class':'fm-col-priority', 'orderable':false},
+				{'class':'fm-col-notes', 'orderable':false},
+				{'class':'fm-col-created'},
+				{'class':'fm-col-due'},
+				{'class':'fm-col-job_date'},
+				{'class':'fm-col-dept'},
+				{'class':'fm-col-user'},
+				{'class':'fm-col-status', 'orderable':false},
+				{'class':'fm-col-other', 'orderable':false},
 			], // }
 			'deferRender':true,
 			'paginationType':'full_numbers',
 			'processing':true,
 			'rowCallback': function(row, data, idx) {
+				$('td.fm-col-customer', row).text(data[1][2]);
+				// { notes
+				var ns=JSON.parse(data[4]), notes=[];
+				if (ns && ns.length) {
+					for (var i=0;i<ns.length;++i) {
+						if (ns[i].content) {
+							notes.push(ns[i].content);
+						}
+					}
+				}
+				if (notes.length) {
+					$('<button/>')
+						.text(notes.length)
+						.appendTo($('td.fm-col-notes', row).empty())
+						.prop('title', notes.join("\n"));
+				}
+				else {
+					$('td.fm-col-notes', row).text('');
+				}
+				// }
+				$('td.fm-col-created', row).text(data[5].replace(/ .*/, ''));
+				$('td.fm-col-due', row).text(data[6].replace(/ .*/, ''));
+				$('td.fm-col-job_date', row).text(data[7].replace(/ .*/, ''));
+				$('td.fm-col-dept', row).text(data[8]);
+				$('td.fm-col-user', row).text(data[9]);
+				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
+			},
+			'drawCallback':function() {
+				console.log($tableDom.width(), $content.width());
+				var tw=$tableDom.width(), cw=$content.width();
+				if (tw>cw) {
+					$tableDom.css('zoom', (cw-3)/tw);
+				}
+				else {
+					$tableDom.css('zoom', 1);
+				}
 			},
 			'serverSide':true,
 		});

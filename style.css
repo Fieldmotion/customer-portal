@@ -1,3 +1,9 @@
+#fm-content table.dataTable thead tr:nth-child(2) input,
+#fm-content table.dataTable thead tr:nth-child(2) select
+{
+	width:100%;
+	min-width:40px;
+}
 #fm-customer-portal{
 	min-height:500px;
 }
@@ -5,18 +11,34 @@
 	font-size:8px;
 	opacity:.3;
 }
-.fm-nav{
+#fm-content{
+	background:#fff;
+	border:1px solid #000;
+	margin-top:-1px;
+	padding;5px 0;
+}
+#fm-menu ul.fm-nav{
 	list-style:none;
 	padding:0;
 	margin:0;
 }
-.fm-nav li{
+#fm-menu ul.fm-nav li{
 	list-style:none;
 	padding:0;
 	margin:0;
 	display:inline-block;
 }
-.fm-nav a{
+#fm-menu ul.fm-nav a{
 	display:block;
 	padding:2px 5px;
+	text-decoration:none;
+	border:1px solid #000;
+	border-radius:5px 5px 0 0;
+}
+#fm-menu ul.fm-nav li::before{
+	display:none;
+}
+#fm-menu ul.fm-nav a.fm-selected{
+	border-bottom:1px solid #fff;
+	font-weight:bold;
 }
