@@ -120,23 +120,34 @@ fm.fns.showJobsList=function() {
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
 				// { show report or authorisation button
 				var s=+data[10];
-				if (s==3) {
+				if (s==3) { // authorise
 					$('<button/>')
-						.text((window.selects.appointment.statuses[s]||{'name':'UNKNOWN'}).name)
+						.text(fm.job_statuses[s]||'Authorisation Needed')
 						.click(function() {
-							var p=confirm('Do you wish to authorise this work?');
-							if (!p) {
-								return;
-							}
-							$.post('/portal/appointment-authorise.php', {
-								'id':id
-							}, function() {
-								$table.draw();
+							var $dialog=$('<p>Do you wish to authorise this job?</p>').dialog({
+								'modal':true,
+								'close':function() {
+									$dialog.remove();
+								},
+								'buttons':{
+									'Yes':function() {
+										$.post(fm.url+'Job_authorise', fm.fns.getPayLoad({'id':data[0]}), function(ret) {
+											if (ret.error) {
+												return alert(ret.error);
+											}
+											$dialog.remove();
+											$table.draw();
+										});
+									},
+									'No':function() {
+										$dialog.remove();
+									}
+								}
 							});
 						})
-						.appendTo($td.empty());
+						.appendTo($('td.fm-col-other', row).empty());
 				}
-				if (s==2) {
+				else if (s==2) { // download report
 					$('<button/>')
 						.text('Report')
 						.click(function() {
@@ -153,7 +164,7 @@ fm.fns.showJobsList=function() {
 						.appendTo($('td.fm-col-other', row).empty());
 				}
 				else {
-					$('td.fm-col-other', row).text('--').attr('title', 'Report not available until the appointment is marked as '+fm.job_statuses[2]);
+					$('td.fm-col-other', row).text('--').attr('title', 'Report not available until the job is marked as '+fm.job_statuses[2]);
 				}
 				// }
 			},
