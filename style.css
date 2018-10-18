@@ -4,6 +4,14 @@
 	width:100%;
 	min-width:40px;
 }
+#fm-content label div{
+	display:inline-block;
+}
+#fm-content .date-wrapper{
+	position:relative;
+	box-shadow:2px 2px 5px inset #666;
+	padding:2px 5px;
+}
 #fm-customer-portal{
 	min-height:500px;
 }
@@ -41,4 +49,7 @@
 #fm-menu ul.fm-nav a.fm-selected{
 	border-bottom:1px solid #fff;
 	font-weight:bold;
+}
+.ui-widget{
+	background:rgba(255,255,255,.5);
 }
