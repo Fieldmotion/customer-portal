@@ -118,12 +118,49 @@ fm.fns.showJobsList=function() {
 				$('td.fm-col-dept', row).text(data[8]);
 				$('td.fm-col-user', row).text(data[9]);
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
+				// { show report or authorisation button
+				var s=+data[10];
+				if (s==3) {
+					$('<button/>')
+						.text((window.selects.appointment.statuses[s]||{'name':'UNKNOWN'}).name)
+						.click(function() {
+							var p=confirm('Do you wish to authorise this work?');
+							if (!p) {
+								return;
+							}
+							$.post('/portal/appointment-authorise.php', {
+								'id':id
+							}, function() {
+								$table.draw();
+							});
+						})
+						.appendTo($td.empty());
+				}
+				if (s==2) {
+					$('<button/>')
+						.text('Report')
+						.click(function() {
+							$.post(fm.url+'Job_getReport', fm.fns.getPayLoad({'id':data[0]}), function(ret) {
+								if (ret.error) {
+									return alert(ret.error);
+								}
+								if (ret.url) {
+									document.location=ret.url;
+								}
+							});
+							return false;
+						})
+						.appendTo($('td.fm-col-other', row).empty());
+				}
+				else {
+					$('td.fm-col-other', row).text('--').attr('title', 'Report not available until the appointment is marked as '+fm.job_statuses[2]);
+				}
+				// }
 			},
 			'drawCallback':function() {
-				console.log($tableDom.width(), $content.width());
 				var tw=$tableDom.width(), cw=$content.width();
 				if (tw>cw) {
-					$tableDom.css('zoom', (cw-3)/tw);
+					$tableDom.css('zoom', (cw-4)/tw);
 				}
 				else {
 					$tableDom.css('zoom', 1);
