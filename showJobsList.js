@@ -69,6 +69,8 @@ fm.fns.showJobsList=function() {
 			'ajax':(data, callback, settings)=>{
 				delete data.columns;
 				data.job_ref=$('#fm-filter-job-ref').val();
+				data.date_from=$('#fm-date-from').val();
+				data.date_to=$('#fm-date-to').val();
 				data.status=$('#fm-filter-status').val();
 				$.post(fm.url+'Jobs_getDT', fm.fns.getPayLoad(data), callback);
 			},
@@ -129,6 +131,14 @@ fm.fns.showJobsList=function() {
 			},
 			'serverSide':true,
 		});
+		$tableDom
+			.find('thead input,thead select')
+			.on('click', function() {
+				return false;
+			})
+			.on('change', function() {
+				$table.draw();
+			});
 		// }
 	});
 }
