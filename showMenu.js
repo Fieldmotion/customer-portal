@@ -14,30 +14,36 @@ fm.fns.showMenu=()=>{
 			fm.fns.whenFunctionsExist(['showAssets'], function() {
 				fm.fns.showAssets();
 			});
+			return false;
 		})
 		.on('click', '.fm-link-calendar', function() {
 			fm.fns.whenFunctionsExist(['showJobsCalendar'], function() {
 				fm.fns.showJobsCalendar();
 			});
+			return false;
 		})
 		.on('click', '.fm-link-files', function() {
 			fm.fns.whenFunctionsExist(['showFiles'], function() {
 				fm.fns.showFiles();
 			});
+			return false;
 		})
 		.on('click', '.fm-link-invoices', function() {
 			fm.fns.whenFunctionsExist(['showInvoices'], function() {
 				fm.fns.showInvoices();
 			});
+			return false;
 		})
 		.on('click', '.fm-link-list', function() {
 			fm.fns.whenFunctionsExist(['showJobsList'], function() {
 				fm.fns.showJobsList();
 			});
+			return false;
 		})
 		.on('click', '.fm-link-logout', function() {
 			fm.fns.whenFunctionsExist(['logout'], function() {
 				fm.fns.logout();
 			});
+			return false;
 		});
 }
