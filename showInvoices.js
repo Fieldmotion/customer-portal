@@ -42,7 +42,6 @@ fm.fns.showInvoices=function() {
 				var statuses={'-1':'DRAFT', '0':'Quoted', '1':'Invoiced', '2':'Paid', '3':'Cancelled'};
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
-				$('<a href="#" class="fm-download" style="display:block"/>').text(data[1]).appendTo($('td.fm-col-filename', row).empty());
 				$('td.fm-col-num', row).text(data[1]);
 				$('td.fm-col-job', row).text(fm.fns.datetimeFormat(data[2][1]));
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[3]));
@@ -50,6 +49,7 @@ fm.fns.showInvoices=function() {
 				$('td.fm-col-paid', row).text((+data[5]).toFixed(2));
 				$('td.fm-col-notes', row).text(data[6]);
 				$('td.fm-col-status', row).text(statuses[data[7]]);
+				$('<button class="fm-download">Download</button>').appendTo($('td.fm-col-download', row).empty());
 			},
 			'drawCallback':function() {
 				var tw=$tableDom.width(), cw=$content.width();
@@ -63,7 +63,7 @@ fm.fns.showInvoices=function() {
 			'serverSide':true,
 		});
 		$tableDom
-			.on('click', 'a.fm-download', function() {
+			.on('click', '.fm-download', function() {
 				$.post(fm.url+'Invoice_download', fm.fns.getPayLoad({'id':$(this).closest('tr').data('id')}), function(ret) {
 					if (ret.error) {
 						return alert(ret.error);
