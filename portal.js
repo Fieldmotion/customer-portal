@@ -13,6 +13,7 @@ fm.fns.checkLoginStatus=function() {
 		if (ret && ret.ok && ret.ok=='1') {
 			fm.date_format=ret.settings['date-format']||'Y-m-d';
 			fm.time_format=ret.settings['time-format']||'24h';
+			fm.job_creation=ret.settings['job-creation']||0;
 			return fm.fns.pageMain();
 		}
 		else {
@@ -358,7 +359,8 @@ fm.fns.datePicker=function(opts) {
 			'float':'right'
 		});
 		function updateAlt() {
-			$alt.text(opts[4]?'':($el.val()=='0000-00-00'?'-- -- --':fm.fns.dateFormat($el.datepicker('getDate'))));
+			var txt=opts[4]?'':($el.val()=='0000-00-00'?'-- -- --':fm.fns.dateFormat($el.datepicker('getDate')));
+			$alt.text(txt);
 		}
 		if (opts[1]||$el.val()) {
 			var v=opts[1]||$el.val();
@@ -511,6 +513,49 @@ fm.fns.requireDataTables=function(callback) {
 				}
 			}
 			setTimeout(resizeDatatables, 100);
+			return callback();
+		}
+		setTimeout(wait, 1);
+	}
+	wait();
+}
+fm.fns.requireFullCalendar=function(callback) {
+	fm.fns.requireMoment(function() {
+		if ($.fn.fullCalendar) {
+			return callback();
+		}
+		$('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css"/>').appendTo('head');
+		$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js');
+		function wait() {
+			if ($.fn.fullCalendar) {
+				return callback();
+			}
+			setTimeout(wait, 1);
+		}
+		wait();
+	});
+}
+fm.fns.requireMoment=function(callback) {
+	if (window.moment) {
+		return callback();
+	}
+	$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js');
+	function wait() {
+		if (window.moment) {
+			return callback();
+		}
+		setTimeout(wait, 1);
+	}
+	wait();
+}
+fm.fns.requireDateTimePicker=function(callback) {
+	if ($.fn.datetimepicker) {
+		return callback();
+	}
+	$('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.min.css"/>').appendTo('head');
+	$.cachedScript('https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.full.min.js');
+	function wait() {
+		if ($.fn.datetimepicker) {
 			return callback();
 		}
 		setTimeout(wait, 1);

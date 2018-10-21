@@ -11,7 +11,7 @@ fm.fns.showJobsList=function() {
 	var daysFrom=localStorage.fmPortalDaysFrom||-7;
 	var daysTo=localStorage.fmPortalDaysTo||7;
 	fm.fns.requireDataTables(function() {
-		var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
+		var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div id="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
 		// { build table HTML
 		var $tableDom=$('<table style="width:100%"><thead>'
 			+'<tr><th>ID</th>'
@@ -188,6 +188,15 @@ fm.fns.showJobsList=function() {
 				$table.draw();
 			});
 		// }
+		if (fm.job_creation) {
+			$('<button>Create Job</button>')
+				.on('click', function() {
+					fm.fns.whenFunctionsExist(['popupJobNew'], function() {
+						fm.fns.popupJobNew($table);
+					});
+				})
+				.prependTo('#fm-bar');
+		}
 	});
 	return false;
 }
