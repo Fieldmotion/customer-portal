@@ -597,6 +597,7 @@ window.addEventListener('load', function() {
 		if (typeof jQuery==='undefined') {
 			return setTimeout(waitForJQuery, 1);
 		}
+		window.$=jQuery;
 		$.cachedScript = function( url, options ) {
 			options = $.extend( options || {}, {
 				dataType: "script",
