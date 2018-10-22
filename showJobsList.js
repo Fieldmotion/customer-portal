@@ -114,7 +114,7 @@ fm.fns.showJobsList=function() {
 				// }
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[5]));
 				$('td.fm-col-due', row).text(fm.fns.dateFormat(data[6]));
-				$('td.fm-col-job_date', row).text(fm.fns.dateFormat(data[7]));
+				$('td.fm-col-job_date', row).text(fm.fns.datetimeFormat(data[7]));
 				$('td.fm-col-dept', row).text(data[8]);
 				$('td.fm-col-user', row).text(data[9]);
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);

@@ -454,7 +454,7 @@ fm.fns.initialise=function() {
 	}
 	// }
 	fm.client_id=+fm.$wrapper.data('cid');
-	fm.url=fm.$wrapper.data('url')||'https://customer-api.fieldmotion.com/';
+	fm.url=fm.$wrapper.data('url')||'https://p.fieldmotion.com/customers-api/';
 	fm.scriptUrl=fm.$wrapper.prop('src').replace(/\/[^\/]*$/, '');
 	fm.$wrapper.replaceWith('<div id="fm-customer-portal"></div>');
 	fm.$wrapper=$('#fm-customer-portal');
