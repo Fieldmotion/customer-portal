@@ -63,3 +63,12 @@
 .ui-dialog-titlebar button{
 	float:right;
 }
+#fm-popup-job-new input,#fm-popup-job-new select,#fm-popup-job-new textarea{
+	width:100%;
+}
+#fm-popup-job-new textarea{
+	min-height:64px;
+}
+.fm-small{
+	font-size:small;
+}

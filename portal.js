@@ -17,6 +17,7 @@ fm.fns.checkLoginStatus=function() {
 			fm.date_format=ret.settings['date-format']||'Y-m-d';
 			fm.time_format=ret.settings['time-format']||'24h';
 			fm.job_creation=ret.settings['job-creation']||0;
+			fm.contact=ret.contact;
 			return fm.fns.pageMain();
 		}
 		else {

@@ -1,8 +1,11 @@
 fm.fns.popupJobNew=function($view) {
 	var $dialog=$('<div id="fm-popup-job-new"><table style="width:100%">'
 		+'<tr><th>When</th><td><input id="fm-popup-meeting_time"/></td></tr>'
-		+'<tr><th>Job Type</th><td><select id="fm-popup-form_id" style="width:100%"/></td></tr>'
-		+'<tr><th>Notes</th><td><textarea id="fm-popup-notes" style="width:100%"/></td></tr>'
+		+'<tr><th>Job Type</th><td><select id="fm-popup-form_id"/></td></tr>'
+		+'<tr><th>Notes</th><td><textarea id="fm-popup-notes"/></td></tr>'
+		+'<tr class="fm-small"><th>Name</th><td><input id="fm-popup-name"/></td></tr>'
+		+'<tr class="fm-small"><th>Phone</th><td><input id="fm-popup-phone"/></td></tr>'
+		+'<tr class="fm-small"><th>Email</th><td><input id="fm-popup-email"/></td></tr>'
 		+'</table></div>')
 		.dialog({
 			'title':'Create Job',
@@ -13,6 +16,19 @@ fm.fns.popupJobNew=function($view) {
 			'buttons':{
 				'Create':function() {
 					var when=$('#fm-popup-meeting_time').val(), form_id=$('#fm-popup-form_id').val(), notes=$('#fm-popup-notes').val();
+					var name=$('#fm-popup-name').val(), phone=$('#fm-popup-phone').val(), email=$('#fm-popup-email').val();
+					if (name || phone || email) {
+						notes+="\n\n--";
+						if (name) {
+							notes+="\nName: "+name;
+						}
+						if (phone) {
+							notes+="\nPhone: "+phone;
+						}
+						if (email) {
+							notes+="\nEmail: "+email;
+						}
+					}
 					if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(when)) {
 						return alert('please choose a prefered job date/time');
 					}
@@ -33,6 +49,9 @@ fm.fns.popupJobNew=function($view) {
 			}
 		});
 	$('#fm-popup-meeting_time').val((new Date).toYMDHIS());
+	$('#fm-popup-name').val(fm.contact.name);
+	$('#fm-popup-email').val(fm.contact.email);
+	$('#fm-popup-phone').val(fm.contact.mobile);
 	fm.fns.requireDateTimePicker(function() {
 		$('#fm-popup-meeting_time')
 			.datetimepicker({
