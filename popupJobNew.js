@@ -42,22 +42,22 @@ fm.fns.popupJobNew=function($view) {
 			})
 	});
 	function showForms() {
-		if (!fm.forms) {
-			$.post(fm.url+'Forms_list', fm.fns.getPayLoad(), function(ret) {
+		if (!fm.forms_pickable) {
+			$.post(fm.url+'Forms_list', fm.fns.getPayLoad({'pickable':1}), function(ret) {
 				if (!ret || ret.error) {
 					return alert(ret.error || 'failed to load forms list');
 				}
 				ret.sort(function(a, b) {
 					return a.name<b.name;
 				});
-				fm.forms=ret;
+				fm.forms_pickable=ret;
 				showForms();
 			});
 			return;
 		}
 		var opts=['<option value="0"> -- </option>'];
-		for (var i=0;i<fm.forms.length;++i) {
-			opts.push($('<option value="'+fm.forms[i].id+'"/>').text(fm.forms[i].name));
+		for (var i=0;i<fm.forms_pickable.length;++i) {
+			opts.push($('<option value="'+fm.forms_pickable[i].id+'"/>').text(fm.forms_pickable[i].name));
 		}
 		$('#fm-popup-form_id').append(opts);
 	}

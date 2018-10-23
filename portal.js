@@ -2,6 +2,9 @@ window.fm={'fns':[]};
 fm.fns.checkLoginStatus=function() {
 	try {
 		fm.credentials=JSON.parse(localStorage.fm_cp_credentials);
+		if (fm.credentials.client_id) {
+			fm.client_id=fm.credentials.client_id;
+		}
 	}
 	catch(e) {
 		return fm.fns.pageLogin();
@@ -444,8 +447,8 @@ fm.fns.initialise=function() {
 	if (!fm.$wrapper.length) {
 		return alert('element with ID fm-customer-portal not found');
 	}
-	if (!+fm.$wrapper.data('cid')) {
-		return alert('fm-customer-portal must have a data field with your user account ID');
+	if (+fm.$wrapper.data('cid')) {
+		fm.client_id=+fm.$wrapper.data('cid');
 	}
 	// { make sure backlink exists
 	var $backlink=fm.$wrapper.next();
@@ -453,7 +456,6 @@ fm.fns.initialise=function() {
 		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediatelyy followed by a link to https://fieldmotion.com/');
 	}
 	// }
-	fm.client_id=+fm.$wrapper.data('cid');
 	fm.url=fm.$wrapper.data('url')||'https://p.fieldmotion.com/customers-api/';
 	fm.scriptUrl=fm.$wrapper.prop('src').replace(/\/[^\/]*$/, '');
 	fm.$wrapper.replaceWith('<div id="fm-customer-portal"></div>');
@@ -500,25 +502,31 @@ fm.fns.onBodyLoad=function() {
 };
 fm.fns.pageLogin=function() {
 	var $login=$('<table>'
+		+'<tr><th>Client ID</th><td><input class="fm-client-id"/></td></tr>'
 		+'<tr><th>Customer ID</th><td><input class="fm-customer-id"/></td></tr>'
 		+'<tr><th>Password</th><td><input type="password" class="fm-customer-password"/></td></tr>'
 		+'<tr><td>&nbsp;</td><td><button class="fm-login">Log In</button></td></tr>'
 		+'</table>')
 		.appendTo(fm.$wrapper.empty());
+	if (fm.client_id) {
+		$login.find('.fm-client-id').val(fm.client_id).closest('tr').css('display', 'none');
+	}
 	$login.find('button').click(()=>{
-		var cid=$login.find('.fm-customer-id').val(), pass=$login.find('.fm-customer-password').val();
-		if (!cid || !pass) {
-			return alert('Please fill in both the Customer ID and the Password');
+		var client_id=+$login.find('.fm-client-id').val(), cid=+$login.find('.fm-customer-id').val(), pass=$login.find('.fm-customer-password').val();
+		if (!client_id || !cid || !pass) {
+			return alert('Please fill in all fields');
 		}
 		$.post(fm.url+'Login_login', {
-			'client_id':fm.client_id,
+			'client_id':client_id,
 			'customer_id':cid,
 			'password':pass
 		}, function(ret) {
 			if (ret.error) {
 				return alert(ret.error);
 			}
+			fm.client_id=client_id;
 			fm.credentials={
+				'client_id':client_id,
 				'session_id':ret.session_id,
 				'session_key':ret.session_key
 			};

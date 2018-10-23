@@ -8,6 +8,13 @@ fm.fns.showJobsList=function() {
 		});
 		return;
 	}
+	if (!fm.job_priorities) { // make sure page knows the Prioritieslist
+		$.post(fm.url+'Jobs_listPriorities', fm.fns.getPayLoad(), function(ret) {
+			fm.job_priorities=ret.priorities;
+			fm.fns.showJobsList();
+		});
+		return;
+	}
 	var daysFrom=localStorage.fmPortalDaysFrom||-7;
 	var daysTo=localStorage.fmPortalDaysTo||7;
 	fm.fns.requireDataTables(function() {
@@ -19,7 +26,7 @@ fm.fns.showJobsList=function() {
 			+'<th title="Job Reference">Ref.</th><th>Priority</th>'
 			+'<th>Notes</th><th title="Date Created">Created</th><th>Due</th>'
 			+'<th title="Appointment Date">Job Date</th>'
-			+'<th title="Department">Dept.</th>'
+			+'<th title="Department / Job Type">Dept./Type</th>'
 			+'<th title="User">User</th><th>Status</th><th/></tr>'
 			+'<tr><td/><td/><td><input id="fm-filter-job-ref"/></td><td/><td/><td/><td/><td/>'
 			+'<td/><td/><td><select id="fm-filter-status"><option value=""/></select></td><td/></tr>'
@@ -80,8 +87,8 @@ fm.fns.showJobsList=function() {
 				{'class':'fm-col-ref'},
 				{'class':'fm-col-priority', 'orderable':false},
 				{'class':'fm-col-notes', 'orderable':false},
-				{'class':'fm-col-created'},
-				{'class':'fm-col-due'},
+				{'class':'fm-col-created', 'visible':false},
+				{'class':'fm-col-due', 'visible':false},
 				{'class':'fm-col-job_date'},
 				{'class':'fm-col-dept'},
 				{'class':'fm-col-user'},
@@ -93,6 +100,7 @@ fm.fns.showJobsList=function() {
 			'processing':true,
 			'rowCallback': function(row, data, idx) {
 				$('td.fm-col-customer', row).text(data[1][2]);
+				$('td.fm-col-priority', row).text(fm.job_priorities[data[3]]||'');
 				// { notes
 				var ns=JSON.parse(data[4]), notes=[];
 				if (ns && ns.length) {
@@ -112,10 +120,12 @@ fm.fns.showJobsList=function() {
 					$('td.fm-col-notes', row).text('');
 				}
 				// }
-				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[5]));
-				$('td.fm-col-due', row).text(fm.fns.dateFormat(data[6]));
-				$('td.fm-col-job_date', row).text(fm.fns.datetimeFormat(data[7]));
-				$('td.fm-col-dept', row).text(data[8]);
+				var $table2=$('<table><tr><td colspan="2" title="job date/time"></td></tr><tr class="fm-job-dates"><td title="date created"/><td title="due date"/></tr></table>');
+				$table2.find('tr:first-child td').text(fm.fns.datetimeFormat(data[7]));
+				$table2.find('tr:nth-child(2) td:first-child').text(fm.fns.dateFormat(data[5]));
+				$table2.find('tr:nth-child(2) td:nth-child(2)').text(fm.fns.dateFormat(data[6]));
+				$('td.fm-col-job_date', row).empty().append($table2);
+				$('td.fm-col-dept', row).empty().append([$('<div class="fm-dept" title="department"/>').text(data[8][0]), $('<div class="fm-form" title="job type"/>').text(data[8][1])]);
 				$('td.fm-col-user', row).text(data[9]);
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
 				// { show report or authorisation button
