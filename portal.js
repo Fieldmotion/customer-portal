@@ -548,8 +548,8 @@ fm.fns.requireDataTables=function(callback) {
 	if ($.fn.DataTable) {
 		return callback();
 	}
-	$('<link rel="stylesheet" href="//cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>').appendTo('head');
-	$.cachedScript('//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js');
+	$('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>').appendTo('head');
+	$.cachedScript('https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js');
 	function wait() {
 		if ($.fn.DataTable) {
 			function resizeDatatables() {
