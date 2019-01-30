@@ -8,6 +8,7 @@ fm.fns.popupJobNew=function($view) {
 		+'<tr class="fm-small"><th>Email</th><td><input id="fm-popup-email"/></td></tr>'
 		+'</table></div>')
 		.dialog({
+		  'appendTo':'#fm-customer-portal',
 			'title':'Create Job',
 			'close':function() {
 				$dialog.remove();
