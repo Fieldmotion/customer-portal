@@ -8,7 +8,6 @@ fm.fns.popupJobNew=function($view) {
 		+'<tr class="fm-small"><th>Email</th><td><input id="fm-popup-email"/></td></tr>'
 		+'</table></div>')
 		.dialog({
-		  'appendTo':'#fm-customer-portal',
 			'title':'Create Job',
 			'close':function() {
 				$dialog.remove();
@@ -48,7 +47,7 @@ fm.fns.popupJobNew=function($view) {
 					});
 				}
 			}
-		});
+		}).parent().css('z-index', 1);
 	$('#fm-popup-meeting_time').val((new Date).toYMDHIS());
 	$('#fm-popup-name').val(fm.contact.name);
 	$('#fm-popup-email').val(fm.contact.email);
