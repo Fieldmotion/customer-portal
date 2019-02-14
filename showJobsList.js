@@ -130,6 +130,8 @@ fm.fns.showJobsList=function() {
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
 				// { show report or authorisation button
 				var s=+data[10];
+				var stat=fm.appointment_statuses[s];
+				var $other=$('td.fm-col-other', row).empty();
 				if (s==3) { // authorise
 					$('<button/>')
 						.text(fm.job_statuses[s]||'Authorisation Needed')
@@ -155,9 +157,11 @@ fm.fns.showJobsList=function() {
 								}
 							});
 						})
-						.appendTo($('td.fm-col-other', row).empty());
+						.appendTo($other);
 				}
-				else if (s==2) { // download report
+				if ((stat.portal_report!==undefined && +stat.portal_report)
+					|| (stat.portal_report===undefined && s==2)
+				) { // download report
 					$('<button/>')
 						.text('Report')
 						.click(function() {
@@ -171,11 +175,9 @@ fm.fns.showJobsList=function() {
 							});
 							return false;
 						})
-						.appendTo($('td.fm-col-other', row).empty());
+						.appendTo($other);
 				}
-				else {
-					$('td.fm-col-other', row).text('--').attr('title', 'Report not available until the job is marked as '+fm.job_statuses[2]);
-				}
+				$other.filter(':empty').text('--').attr('title', 'Report not available until the job is marked as '+fm.job_statuses[2]);
 				// }
 			},
 			'drawCallback':function() {

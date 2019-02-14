@@ -17,6 +17,10 @@ fm.fns.checkLoginStatus=function() {
 			fm.date_format=ret.settings['date-format']||'Y-m-d';
 			fm.time_format=ret.settings['time-format']||'24h';
 			fm.job_creation=ret.settings['job-creation']||0;
+			fm.appointment_statuses=JSON.parse(
+				ret.settings['appointment-statuses']
+				||'[{"name":"Incomplete"},{"name":"Complete"},{"name":"Processed"},{"name":"Requires Customer Authorisation"},{"name":"Authorised"}]'
+			);
 			fm.contact=ret.contact;
 			return fm.fns.pageMain();
 		}
@@ -423,12 +427,12 @@ fm.fns.dateToYMDHIS=function() {
 	}
 	return this.toYMD()+' '+hour+":"+minute+":00";
 }
-fm.fns.functionLoad=function(fn) {
+fm.fns.functionLoad=function(fn, v=0) {
 	if (fm.fns[fn]) { // already loading or loaded
 		return;
 	}
 	fm.fns[fn]=true;
-	$('<script src="'+fm.scriptUrl+'/'+fn+'.js"></script>').appendTo('head');
+	$('<script src="'+fm.scriptUrl+'/'+fn+'.js?c='+(+new Date)+'"></script>').appendTo('head');
 };
 fm.fns.getPayLoad=function(params) {
 	var json=JSON.stringify(params);
@@ -613,7 +617,7 @@ fm.fns.whenFunctionsExist=function(fns, callback) {
 		var missing=0;
 		for (var i=0;i<fns.length;++i) {
 			if (!fm.fns[fns[i]]) { // load the function
-				fm.fns.functionLoad(fns[i]);
+				fm.fns.functionLoad(fns[i], fm.v);
 			}
 			if (fm.fns[fns[i]]===true) { // function still loading
 				missing++;
