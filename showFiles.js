@@ -37,7 +37,15 @@ fm.fns.showFiles=function() {
 				$('td.fm-col-description', row).text(data[2]);
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[3]));
 				// { notes
-				var ns=JSON.parse(data[4]), notes=[];
+				var ns, notes=[];
+				try{
+					ns=JSON.parse(data[4]);
+				}
+				catch (e) {
+					ns=[{
+						'content':data[4]
+					}];
+				}
 				if (ns && ns.length) {
 					for (var i=0;i<ns.length;++i) {
 						if (ns[i].content) {
@@ -49,7 +57,18 @@ fm.fns.showFiles=function() {
 					$('<button/>')
 						.text(notes.length)
 						.appendTo($('td.fm-col-notes', row).empty())
-						.prop('title', notes.join("\n"));
+						.click(()=>{
+							var rows=[];
+							for (var i=0;i<notes.length;++i) {
+								rows.push($('<p/>').text(notes[i]));
+							}
+							var $dialog=$('<div/>').append(rows).dialog({
+								'modal':true,
+								'close':()=>{
+									$dialog.remove();
+								}
+							});
+						});
 				}
 				else {
 					$('td.fm-col-notes', row).text('');
