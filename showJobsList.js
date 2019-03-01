@@ -1,3 +1,6 @@
+// { eslint settings
+/* global fm */
+// }
 fm.fns.showJobsList=function() {
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-list').addClass('fm-selected');
@@ -73,11 +76,12 @@ fm.fns.showJobsList=function() {
 		// }
 		// { build the DataTable
 		var $table=$tableDom.DataTable({
-			'ajax':(data, callback, settings)=>{
+			'ajax':(data, callback)=>{
 				delete data.columns;
 				data.job_ref=$('#fm-filter-job-ref').val();
-				data.date_from=$('#fm-date-from').val();
-				data.date_to=$('#fm-date-to').val();
+				data.date_from=+$('#fm-date-from').val();
+				data.date_to=+$('#fm-date-to').val();
+				data.search={'value':$tableDom.closest('.dataTables_wrapper').find('.dataTables_filter input').val()};
 				data.status=$('#fm-filter-status').val();
 				$.post(fm.url+'Jobs_getDT', fm.fns.getPayLoad(data), callback);
 			},
@@ -96,9 +100,19 @@ fm.fns.showJobsList=function() {
 				{'class':'fm-col-other', 'orderable':false},
 			], // }
 			'deferRender':true,
+			'initComplete':()=>{
+				$tableDom.closest('.dataTables_wrapper').find('input')
+					.unbind()
+					.bind('keyup', ()=>{
+						clearTimeout(window.fm_timer);
+						window.fm_timer=setTimeout(()=>{
+							$table.draw();
+						}, 500);
+					});
+			},
 			'paginationType':'full_numbers',
 			'processing':true,
-			'rowCallback': function(row, data, idx) {
+			'rowCallback': function(row, data) {
 				$('td.fm-col-customer', row).text(data[1][2]);
 				$('td.fm-col-priority', row).text(fm.job_priorities[data[3]]||'');
 				// { notes
@@ -114,7 +128,7 @@ fm.fns.showJobsList=function() {
 					$('<button/>')
 						.text(notes.length)
 						.appendTo($('td.fm-col-notes', row).empty())
-						.prop('title', notes.join("\n"));
+						.prop('title', notes.join('\n'));
 				}
 				else {
 					$('td.fm-col-notes', row).text('');
@@ -211,4 +225,4 @@ fm.fns.showJobsList=function() {
 		}
 	});
 	return false;
-}
+};
