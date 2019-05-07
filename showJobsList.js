@@ -26,7 +26,7 @@ fm.fns.showJobsList=function() {
 		var $tableDom=$('<table style="width:100%"><thead>'
 			+'<tr><th>ID</th>'
 			+'<th>Customer</th>'
-			+'<th title="Job Reference">Ref.</th><th>Priority</th>'
+			+'<th title="Job Reference">Ref.<br/>ours/yours</th><th>Priority</th>'
 			+'<th>Notes</th><th title="Date Created">Created</th><th>Due</th>'
 			+'<th title="Appointment Date">Job Date</th>'
 			+'<th title="Department / Job Type">Dept./Type</th>'
@@ -114,6 +114,15 @@ fm.fns.showJobsList=function() {
 			'processing':true,
 			'rowCallback': function(row, data) {
 				$('td.fm-col-customer', row).text(data[1][2]);
+				var ref=data[2];
+				if (typeof ref!='object') {
+					ref=[ref, ''];
+				}
+				$('td.fm-col-ref', row).empty().append([
+					$('<span class="fm-col-ref-ours"/>').text(ref[0]),
+					' / ',
+					$('<span class="fm-col-ref-yours"/>').text(ref[1])
+				]);
 				$('td.fm-col-priority', row).text(fm.job_priorities[data[3]]||'');
 				// { notes
 				var ns=JSON.parse(data[4]), notes=[];
