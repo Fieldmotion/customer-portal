@@ -1,6 +1,4 @@
-// { eslint settings
 /* global fm */
-// }
 fm.fns.showJobsList=function() {
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-list').addClass('fm-selected');
@@ -75,13 +73,16 @@ fm.fns.showJobsList=function() {
 		$tableDom.find('#fm-filter-status').append(statuses);
 		// }
 		// { build the DataTable
+		var largestW=0, $searchEl;
 		var $table=$tableDom.DataTable({
 			'ajax':(data, callback)=>{
 				delete data.columns;
 				data.job_ref=$('#fm-filter-job-ref').val();
 				data.date_from=+$('#fm-date-from').val();
 				data.date_to=+$('#fm-date-to').val();
-				data.search={'value':$tableDom.closest('.dataTables_wrapper').find('.dataTables_filter input').val()};
+				data.search={
+					value:$searchEl&&$searchEl.val()
+				};
 				data.status=$('#fm-filter-status').val();
 				$.post(fm.url+'Jobs_getDT', fm.fns.getPayLoad(data), callback);
 			},
@@ -101,14 +102,17 @@ fm.fns.showJobsList=function() {
 			], // }
 			'deferRender':true,
 			'initComplete':()=>{
-				$tableDom.closest('.dataTables_wrapper').find('input')
-					.unbind()
+				var $wrapper=$tableDom.closest('.dataTables_wrapper');
+				$wrapper
+					.prepend('<div class="dataTables_filter fm-search-general"><label>Search:<input type="search"/></label></div>');
+				$wrapper.find('input')
 					.bind('keyup', ()=>{
 						clearTimeout(window.fm_timer);
 						window.fm_timer=setTimeout(()=>{
 							$table.draw();
 						}, 500);
 					});
+				$searchEl=$wrapper.find('.fm-search-general input');
 			},
 			'paginationType':'full_numbers',
 			'processing':true,
@@ -205,13 +209,18 @@ fm.fns.showJobsList=function() {
 			},
 			'drawCallback':function() {
 				var tw=$tableDom.width(), cw=$content.width();
+				if (tw<=largestW) {
+					return;
+				}
 				if (tw>cw) {
 					$tableDom.css('zoom', (cw-4)/tw);
 				}
 				else {
 					$tableDom.css('zoom', 1);
 				}
+				largestW=$tableDom.width();
 			},
+			'searching':false,
 			'serverSide':true,
 		});
 		$tableDom
