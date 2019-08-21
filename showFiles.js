@@ -1,3 +1,4 @@
+/* global fm */
 fm.fns.showFiles=function() {
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-files').addClass('fm-selected');
@@ -16,7 +17,7 @@ fm.fns.showFiles=function() {
 		// }
 		// { build the DataTable
 		var $table=$tableDom.DataTable({
-			'ajax':(data, callback, settings)=>{
+			'ajax':(data, callback)=>{
 				delete data.columns;
 				$.post(fm.url+'Files_getDT', fm.fns.getPayLoad(data), callback);
 			},
@@ -30,11 +31,11 @@ fm.fns.showFiles=function() {
 			'deferRender':true,
 			'paginationType':'full_numbers',
 			'processing':true,
-			'rowCallback': function(row, data, idx) {
+			'rowCallback': function(row, data) {
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
 				$('<a href="#" class="fm-download" style="display:block"/>').text(data[1]).appendTo($('td.fm-col-filename', row).empty());
-				$('td.fm-col-description', row).text(data[2]);
+				$('td.fm-col-description', row).text(data[2].replace(/<[^>]*>/g, ''));
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[3]));
 				// { notes
 				var ns, notes=[];
@@ -55,19 +56,29 @@ fm.fns.showFiles=function() {
 				}
 				if (notes.length) {
 					$('<button/>')
-						.text(notes.length)
+						.text(''+notes.length+' note'+(notes.length==1?'':'s'))
 						.appendTo($('td.fm-col-notes', row).empty())
 						.click(()=>{
 							var rows=[];
 							for (var i=0;i<notes.length;++i) {
 								rows.push($('<p/>').text(notes[i]));
 							}
+							var zIndexHighest=()=>{
+								var h=0;
+								$('*').each(function() {
+									if ($(this).zIndex()>h) {
+										h=$(this).zIndex();
+									}
+								});
+								return h+1;
+							};
 							var $dialog=$('<div/>').append(rows).dialog({
 								'modal':true,
 								'close':()=>{
 									$dialog.remove();
 								}
 							});
+							$dialog.parent().css('z-index', zIndexHighest());
 						});
 				}
 				else {
@@ -109,4 +120,4 @@ fm.fns.showFiles=function() {
 		// }
 	});
 	return false;
-}
+};
