@@ -458,7 +458,7 @@ fm.fns.initialise=function() {
 	// { make sure backlink exists
 	var $backlink=fm.$wrapper.next();
 	if (!$backlink.length || !$backlink.is('a') || $backlink.prop('href')!='https://fieldmotion.com/' || $backlink.text().toLowerCase()!='fieldmotion') {
-		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediatelyy followed by a link to https://fieldmotion.com/');
+		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediately followed by a link to https://fieldmotion.com/');
 	}
 	// }
 	fm.url=fm.$wrapper.data('url')||'https://p.fieldmotion.com/customers-api/';

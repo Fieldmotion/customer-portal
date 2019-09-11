@@ -63,7 +63,8 @@ fm.fns.showAssets=function() {
 							'width':640,
 							'close':function() {
 								$dialog.remove();
-							}
+							},
+							'dialogClass':'test'
 						});
 					if (!ret.length) {
 						return $dialog.text('no changes recorded');

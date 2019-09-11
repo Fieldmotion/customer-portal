@@ -106,3 +106,7 @@
 .fm-dialog .fm-action-buttons button{
 	margin:2px 10px;
 }
+
+.ui-dialog{
+	z-index:1000 !important;
+}
