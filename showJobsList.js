@@ -129,7 +129,21 @@ fm.fns.showJobsList=function() {
 				]);
 				$('td.fm-col-priority', row).text(fm.job_priorities[data[3]]||'');
 				// { notes
-				var ns=JSON.parse(data[4]), notes=[];
+				if (!data[4]) {
+					data[4]='[]';
+				}
+				else if (/^[^[{]/.test(data[4])) {
+					data[4]=JSON.stringify([
+						{'content':data[4]}
+					]);
+				}
+				var notes=[], ns;
+				try {
+					ns=JSON.parse(data[4]);
+				}
+				catch (e) {
+					ns=[];
+				}
 				if (ns && ns.length) {
 					for (var i=0;i<ns.length;++i) {
 						if (ns[i].content) {
