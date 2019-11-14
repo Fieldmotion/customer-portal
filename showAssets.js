@@ -1,3 +1,4 @@
+/* global fm */
 fm.fns.showAssets=function() {
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-assets').addClass('fm-selected');
@@ -5,7 +6,15 @@ fm.fns.showAssets=function() {
 		var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Assets</h1>');
 		// { build table HTML
 		var $tableDom=$('<table style="width:100%"><thead>'
-			+'<tr><th>ID</th>'
+			+'<tr>'
+			+'<td>&nbsp;</td>'
+			+'<td>&nbsp;</td>'
+			+'<td><input id="fm-asset-name"/></td>'
+			+'<td><input id="fm-asset-code"/></td>'
+			+'<td>&nbsp;</td>'
+			+'</tr>'
+			+'<tr>'
+			+'<th>ID</th>'
 			+'<th>Location</th>'
 			+'<th>Name</th>'
 			+'<th>Code</th>'
@@ -16,21 +25,23 @@ fm.fns.showAssets=function() {
 		// }
 		// { build the DataTable
 		var $table=$tableDom.DataTable({
-			'ajax':(data, callback, settings)=>{
+			ajax:(data, callback)=>{
 				delete data.columns;
+				data.name=$('#fm-asset-name').val()||undefined;
+				data.code=$('#fm-asset-code').val()||undefined;
 				$.post(fm.url+'Assets_getDT', fm.fns.getPayLoad(data), callback);
 			},
-			'columns':[ // {
+			columns:[ // {
 				{'class':'fm-col-id'},
 				{'class':'fm-col-location'},
 				{'class':'fm-col-name'},
 				{'class':'fm-col-code'},
 				{'class':'fm-col-changes', 'orderable':false},
 			], // }
-			'deferRender':true,
-			'paginationType':'full_numbers',
-			'processing':true,
-			'rowCallback': function(row, data, idx) {
+			deferRender:true,
+			paginationType:'full_numbers',
+			processing:true,
+			rowCallback: function(row, data) {
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
 				$('td.fm-col-location', row).text(data[1][1]||'');
@@ -38,7 +49,7 @@ fm.fns.showAssets=function() {
 				$('td.fm-col-code', row).text(data[3]||'');
 				$('<button class="fm-changes">Changes</button>').appendTo($('td.fm-col-changes', row).empty());
 			},
-			'drawCallback':function() {
+			drawCallback:function() {
 				var tw=$tableDom.width(), cw=$content.width();
 				if (tw>cw) {
 					$tableDom.css('zoom', (cw-4)/tw);
@@ -47,7 +58,8 @@ fm.fns.showAssets=function() {
 					$tableDom.css('zoom', 1);
 				}
 			},
-			'serverSide':true,
+			searching:false,
+			serverSide:true,
 		});
 		$tableDom
 			.on('click', '.fm-changes', function() {
@@ -93,4 +105,4 @@ fm.fns.showAssets=function() {
 		// }
 	});
 	return false;
-}
+};
