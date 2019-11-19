@@ -103,7 +103,20 @@ fm.fns.popupJobNew=function($view) {
 								var $td=$(v), date=$td.data('year')+'-'+(+$td.data('month')+1)+'-'+$td.data('date');
 								date=date.replace('/-([1-z])-/', '-0$1-');
 								date=date.replace('/-([1-z])$/', '-0$1');
-								if (!ds[date] || ds[date]<ret.slots.slots) {
+								var show=0;
+								var t=new Date(date);
+								var day=t.getDay();
+								if (ret.slots.days[day]) {
+									if (ds[date]) {
+										if (ds[date]<ret.slots.slots) {
+											show=1;
+										}
+									}
+									else {
+										show=1;
+									}
+								}
+								if (show) {
 									$td.removeClass('xdsoft_disabled');
 								}
 							});
@@ -113,6 +126,7 @@ fm.fns.popupJobNew=function($view) {
 				onSelectDate:()=>{
 					var $cal=$('.xdsoft_datepicker.active');
 					$cal.next('.xdsoft_timepicker').addClass('active');
+					$('.fm-action-create').prop('disabled', false);
 				}
 			});
 	});
