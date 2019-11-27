@@ -99,6 +99,12 @@ fm.fns.popupJobNew=function($view) {
 									ds[u.d]=+u.ids;
 								});
 							}
+							var d=new Date;
+							for (var i=0;i<ret.slots.notice;++i) {
+								var dy=d.getFullYear(), dm=d.getMonth()+1, dd=d.getDate();
+								ds[dy+'-'+dm+'-'+dd]=ret.slots.slots;
+								d.setDate(d.getDate()+1);
+							}
 							$tds.each((k, v)=>{
 								var $td=$(v), date=$td.data('year')+'-'+(+$td.data('month')+1)+'-'+$td.data('date');
 								date=date.replace('/-([1-z])-/', '-0$1-');
