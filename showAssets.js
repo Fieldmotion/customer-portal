@@ -18,6 +18,7 @@ fm.fns.showAssets=function() {
 			+'<th>Location</th>'
 			+'<th>Name</th>'
 			+'<th>Code</th>'
+			+'<th>Last Interaction</th>'
 			+'<th>Changes</th>'
 			+'</tr>'
 			+'</thead><tbody/></table>')
@@ -36,6 +37,7 @@ fm.fns.showAssets=function() {
 				{'class':'fm-col-location'},
 				{'class':'fm-col-name'},
 				{'class':'fm-col-code'},
+				{'class':'fm-col-last-visit'},
 				{'class':'fm-col-changes', 'orderable':false},
 			], // }
 			deferRender:true,
@@ -47,6 +49,30 @@ fm.fns.showAssets=function() {
 				$('td.fm-col-location', row).text(data[1][1]||'');
 				$('td.fm-col-name', row).text(data[2]||'');
 				$('td.fm-col-code', row).text(data[3]||'');
+				//{ last interaction
+				var lvdate=(fm.fns.dateFormat(data[4][0])||'');
+				$('td.fm-col-last-visit', row).html('<span>'+lvdate+'&nbsp;</span>');
+				if(data[4][1]){
+					$('td.fm-col-last-visit', row).append('<span style="font-size:x-small;margin-right:1em;">Job ID '+(+data[4][1])+'</span>');
+					if(+data[4][2]!==2){
+						$('td.fm-col-last-visit', row).attr('title', 'Report not available until the job is marked as Processed');
+					}else{ //only allow report download if job is processed
+						$('td.fm-col-last-visit', row)
+							.append('<button class="dl-report" title="Download job report">Report</button>')
+							.click(function(){
+								$.post(fm.url+'Job_getReport', fm.fns.getPayLoad({'id':data[4][1]}), function(ret){
+									if(ret.error){
+										return alert(ret.error);
+									}
+									if(ret.url){
+										document.location=ret.url;
+									}
+								});
+								return false;
+							});
+					}
+				}
+				//}
 				$('<button class="fm-changes">Changes</button>').appendTo($('td.fm-col-changes', row).empty());
 			},
 			drawCallback:function() {
