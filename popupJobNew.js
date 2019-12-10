@@ -14,6 +14,7 @@ fm.fns.popupJobNew=function($view) {
 		+'<tr class="fm-small"><th>Name</th><td><input id="fm-popup-name"/></td></tr>'
 		+'<tr class="fm-small"><th>Phone</th><td><input id="fm-popup-phone"/></td></tr>'
 		+'<tr class="fm-small"><th>Email</th><td><input id="fm-popup-email"/></td></tr>'
+		+'<tr class="fm-small"><th>Reference #</th><td><input id="fm-popup-cust-ref"/></td></tr>'
 		+'</table>'
 		+'<div class="fm-action-buttons">'
 		+'<button class="fm-action-create" disabled>Create</button>'
@@ -28,7 +29,8 @@ fm.fns.popupJobNew=function($view) {
 		.on('click', '.fm-action-create', ()=>{
 			var when=$('#fm-popup-meeting_time').val(), form_id=$('#fm-popup-form_id').val(), notes=$('#fm-popup-notes').val();
 			var name=$('#fm-popup-name').val(), phone=$('#fm-popup-phone').val(), email=$('#fm-popup-email').val();
-			if (name || phone || email) {
+			var custref=$('#fm-popup-cust-ref').val();
+			if (name || phone || email || custref) {
 				notes+='\n\n--';
 				if (name) {
 					notes+='\nName: '+name;
@@ -39,7 +41,11 @@ fm.fns.popupJobNew=function($view) {
 				if (email) {
 					notes+='\nEmail: '+email;
 				}
+				if (custref) {
+					notes+='\nCustomer Job Ref: '+custref;
+				}
 			}
+			
 			if (!/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]$/.test(when)) {
 				return alert('please choose a prefered job date/time');
 			}
@@ -47,7 +53,7 @@ fm.fns.popupJobNew=function($view) {
 				return alert('please choose a job type');
 			}
 			$.post(fm.url+'Job_new',
-				fm.fns.getPayLoad({'when':when, 'form_id':form_id, 'notes':notes}),
+				fm.fns.getPayLoad({'when':when, 'form_id':form_id, 'notes':notes, 'job_ref_customer':custref}),
 				function(ret) {
 					if (!ret.ok) {
 						return alert((ret||{
