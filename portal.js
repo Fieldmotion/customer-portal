@@ -537,25 +537,26 @@ fm.fns.requireDataTables=function(callback) {
 			}
 		}
 		if ($.fn.DataTable) {
-			$.fn.dataTable.defaults.column.render = function(v){
-				var type = typeof v;
-				var returnVal = null;
-				switch(type){
-					case 'string':
-						returnVal = htmlspecialchars(v);
-						break;
-					case 'object':
-						returnVal = new Object();
-						for(var index in v){
-							returnVal[index] = htmlspecialchars(v[index]);
-						}
-						break;
-					default:
-						returnVal = v;
-						break;
-				}
-				return returnVal;
-			};
+			$.fn.dataTable.defaults.column.render=v=>{
+				var hsc=v=>{
+				  if (typeof v=='string') {
+					return htmlspecialchars(v);
+				  }
+				  else if (typeof v=='object') {
+					if (v===null) {
+					  return null;
+					}
+					Object.keys(v).forEach(k=>{
+					  v[k]=hsc(v[k]);
+					});
+					return v;
+				  }
+				  else {
+					return v;
+				  }
+				};
+				return hsc(v);
+			  };
 			setTimeout(resizeDatatables, 100);
 			return callback();
 		}
