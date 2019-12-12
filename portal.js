@@ -527,8 +527,8 @@ fm.fns.requireDataTables=function(callback) {
 	if ($.fn.DataTable) {
 		return callback();
 	}
-	$('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>').appendTo('head');
-	$.cachedScript('https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js');
+	$('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>').appendTo('head');
+	$.cachedScript('https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js');
 	function wait() {
 		function resizeDatatables() {
 			var tables=$.fn.dataTable.fnTables(true);
@@ -537,6 +537,25 @@ fm.fns.requireDataTables=function(callback) {
 			}
 		}
 		if ($.fn.DataTable) {
+			$.fn.dataTable.defaults.column.render = function(v){
+				var type = typeof v;
+				var returnVal = null;
+				switch(type){
+					case 'string':
+						returnVal = htmlspecialchars(v);
+						break;
+					case 'object':
+						returnVal = new Object();
+						for(var index in v){
+							returnVal[index] = htmlspecialchars(v[index]);
+						}
+						break;
+					default:
+						returnVal = v;
+						break;
+				}
+				return returnVal;
+			};
 			setTimeout(resizeDatatables, 100);
 			return callback();
 		}
@@ -605,6 +624,15 @@ fm.fns.whenFunctionsExist=function(fns, callback) {
 	}
 	checkOrLoop();
 };
+
+function htmlspecialchars(unsafe) {
+	return unsafe
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
 
 Date.prototype.toYMD = fm.fns.dateToYMD;
 Date.prototype.toYMDHIS = fm.fns.dateToYMDHIS;
