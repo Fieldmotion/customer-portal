@@ -249,8 +249,9 @@ fm.fns.showJobsList=function() {
 		if (fm.job_creation) {
 			$('<button>Create Job</button>')
 				.on('click', function() {
+					var $el=$(this);
 					fm.fns.whenFunctionsExist(['popupJobNew'], function() {
-						fm.fns.popupJobNew($table);
+						fm.fns.popupJobNew($table, $el);
 					});
 				})
 				.prependTo('#fm-bar');

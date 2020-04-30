@@ -1,7 +1,7 @@
 // { eslint settings
 /* global fm */
 // }
-fm.fns.popupJobNew=function($view) {
+fm.fns.popupJobNew=function($view, $el) {
 	var $wrapper=$('#fm-content');
 	var $shader=$('<div class="fm-dialog-shader"/>')
 		.appendTo($wrapper);
@@ -20,8 +20,10 @@ fm.fns.popupJobNew=function($view) {
 		+'<button class="fm-action-create" disabled>Create</button>'
 		+'<button class="fm-action-cancel">Cancel</button>'
 		+'</div></div>')
-		.appendTo($wrapper);
-	$dialog
+		.insertAfter($el)
+		.css({
+			'z-index':10000000
+		})
 		.on('click', '.fm-action-cancel', ()=>{
 			$dialog.remove();
 			$shader.remove();
