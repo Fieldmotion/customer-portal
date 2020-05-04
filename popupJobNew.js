@@ -22,7 +22,7 @@ fm.fns.popupJobNew=function($view, $el) {
 		+'</div></div>')
 		.insertAfter($el)
 		.css({
-			'z-index':10000000
+			'z-index':9998 // calendar popup has z-index 9999
 		})
 		.on('click', '.fm-action-cancel', ()=>{
 			$dialog.remove();
