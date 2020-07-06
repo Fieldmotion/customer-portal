@@ -34,8 +34,8 @@ fm.fns.showFiles=function() {
 			'rowCallback': function(row, data) {
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
-				$('<a href="#" class="fm-download" style="display:block"/>').text(data[1]).appendTo($('td.fm-col-filename', row).empty());
-				$('td.fm-col-description', row).text(data[2].replace(/<[^>]*>/g, ''));
+				$('<a href="#" class="fm-download" style="display:block"/>').html(data[1]).appendTo($('td.fm-col-filename', row).empty());
+				$('td.fm-col-description', row).html(data[2]);
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[3]));
 				// { notes
 				var ns, notes=[];

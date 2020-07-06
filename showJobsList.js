@@ -166,7 +166,7 @@ fm.fns.showJobsList=function() {
 				$table2.find('tr:nth-child(2) td:first-child').text(fm.fns.dateFormat(data[5]));
 				$table2.find('tr:nth-child(2) td:nth-child(2)').text(fm.fns.dateFormat(data[6]));
 				$('td.fm-col-job_date', row).empty().append($table2);
-				$('td.fm-col-dept', row).empty().append([$('<div class="fm-dept" title="department"/>').text(data[8][0]), $('<div class="fm-form" title="job type"/>').text(data[8][1])]);
+				$('td.fm-col-dept', row).empty().append([$('<div class="fm-dept" title="department"/>').html(data[8][0]), $('<div class="fm-form" title="job type"/>').html(data[8][1])]);
 				$('td.fm-col-user', row).text(data[9]);
 				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
 				// { show report or authorisation button

@@ -228,7 +228,7 @@ fm.fns.dateFormat=function(d) {
 				// Timezone identifier; e.g. Atlantic/Azores, ...
 				// The following works, but requires inclusion of the very large
 				// timezone_abbreviations_list() function.
-				/*              return that.date_default_timezone_get();
+				/*							return that.date_default_timezone_get();
 				 */
 				var msg = 'Not supported (see source code of date() for timezone on how to add support)';
 				throw new Error(msg);
@@ -423,23 +423,22 @@ fm.fns.getPayLoad=function(params) {
 	};
 };
 fm.fns.initialise=function() {
-	fm.$wrapper=$('#fm-customer-portal');
-	if (!fm.$wrapper.length) {
+	var $script=$('#fm-customer-portal');
+	if (!$script.length) {
 		return alert('element with ID fm-customer-portal not found');
 	}
-	if (+fm.$wrapper.data('cid')) {
-		fm.client_id=+fm.$wrapper.data('cid');
+	if (+$script.data('cid')) {
+		fm.client_id=+$script.data('cid');
 	}
 	// { make sure backlink exists
-	var $backlink=fm.$wrapper.next();
+	var $backlink=$('#fm-customer-portal+a[href="https://fieldmotion.com/"],a[href="https://fieldmotion.com/"]');
 	if (!$backlink.length || !$backlink.is('a') || $backlink.prop('href')!='https://fieldmotion.com/' || $backlink.text().toLowerCase()!='fieldmotion') {
 		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediately followed by a link to https://fieldmotion.com/');
 	}
 	// }
-	fm.url=fm.$wrapper.data('url')||'https://p.fieldmotion.com/customers-api/';
-	fm.scriptUrl=fm.$wrapper.prop('src').replace(/\/[^/]*$/, '');
-	fm.$wrapper.replaceWith('<div id="fm-customer-portal"></div>');
-	fm.$wrapper=$('#fm-customer-portal');
+	fm.url=$script.data('url')||'https://p.fieldmotion.com/customers-api/';
+	fm.scriptUrl=$script.prop('src').replace(/\/[^/]*$/, '');
+	fm.$wrapper=$('<div id="fm-customer-portal"></div>').insertBefore($backlink);
 	fm.fns.checkLoginStatus();
 	$('<style>@import "'+fm.scriptUrl+'/style.css";</style>').appendTo('head');
 };
@@ -539,24 +538,24 @@ fm.fns.requireDataTables=function(callback) {
 		if ($.fn.DataTable) {
 			$.fn.dataTable.defaults.column.render=v=>{
 				var hsc=v=>{
-				  if (typeof v=='string') {
-					return htmlspecialchars(v);
-				  }
-				  else if (typeof v=='object') {
-					if (v===null) {
-					  return null;
+					if (typeof v=='string') {
+						return htmlspecialchars(v);
 					}
-					Object.keys(v).forEach(k=>{
-					  v[k]=hsc(v[k]);
-					});
-					return v;
-				  }
-				  else {
-					return v;
-				  }
+					else if (typeof v=='object') {
+						if (v===null) {
+							return null;
+						}
+						Object.keys(v).forEach(k=>{
+							v[k]=hsc(v[k]);
+						});
+						return v;
+					}
+					else {
+						return v;
+					}
 				};
 				return hsc(v);
-			  };
+			};
 			setTimeout(resizeDatatables, 100);
 			return callback();
 		}
