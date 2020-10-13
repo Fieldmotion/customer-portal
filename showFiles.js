@@ -9,6 +9,7 @@ fm.fns.showFiles=function() {
 			+'<tr><th>ID</th>'
 			+'<th>Filename</th>'
 			+'<th>Description</th>'
+			+'<th>Tags</th>'
 			+'<th>Created</th>'
 			+'<th>Notes</th>'
 			+'</tr>'
@@ -25,6 +26,7 @@ fm.fns.showFiles=function() {
 				{'class':'fm-col-id'},
 				{'class':'fm-col-filename'},
 				{'class':'fm-col-description', 'orderable':false},
+				{'class':'fm-col-tags'},
 				{'class':'fm-col-created'},
 				{'class':'fm-col-notes', 'orderable':false},
 			], // }
@@ -36,6 +38,17 @@ fm.fns.showFiles=function() {
 				$(row).data('id', +data[0]);
 				$('<a href="#" class="fm-download" style="display:block"/>').html(data[1]).appendTo($('td.fm-col-filename', row).empty());
 				$('td.fm-col-description', row).html(data[2]);
+				// { tags
+				var $tags=data[5];
+				var tagsArr=$tags.split('\n');
+				var tagshtml='';
+				for(var i=0;i<tagsArr.length;i++){
+					if(tagsArr[i].length){
+					 tagshtml+='<span class="tag" style="background-color:#7a799e;font-size:0.8em;padding:0.3em;color:#e0e0e8;margin:0.2em;border-radius:3px;">'+tagsArr[i]+'</span>';
+					}
+				}
+				$('td.fm-col-tags', row).empty().html(tagshtml);
+				//}
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[3]));
 				// { notes
 				var ns, notes=[];
