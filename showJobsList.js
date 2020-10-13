@@ -16,12 +16,23 @@ fm.fns.showJobsList=function() {
 		});
 		return;
 	}
-	var daysFrom=localStorage.fmPortalDaysFrom||-7;
-	var daysTo=localStorage.fmPortalDaysTo||7;
-	fm.fns.requireDataTables(function() {
-		var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div id="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
-		// { build table HTML
-		var $tableDom=$('<table style="width:100%"><thead>'
+	var names=['customer-portal-days-from', 'customer-portal-days-to'];
+	var defaultDaysFrom, defaultDaysTo;
+	$.post(fm.url+'Settings_get', fm.fns.getPayLoad({'names':names}), function(ret){
+		defaultDaysFrom=-7;
+		defaultDaysTo=7;
+		if(ret['customer-portal-days-from']){
+			defaultDaysFrom=(0-(+ret['customer-portal-days-from']));
+		}
+		if(ret['customer-portal-days-to']){
+			defaultDaysTo=+ret['customer-portal-days-to'];
+		}
+		var daysFrom=localStorage.fmPortalDaysFrom||defaultDaysFrom;
+		var daysTo=localStorage.fmPortalDaysTo||defaultDaysTo;
+		fm.fns.requireDataTables(function() {
+			var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div id="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
+			// { build table HTML
+			var $tableDom=$('<table style="width:100%"><thead>'
 			+'<tr><th>ID</th>'
 			+'<th>Customer</th>'
 			+'<th title="Job Reference">Ref.<br/>ours/yours</th><th>Priority</th>'
@@ -33,38 +44,38 @@ fm.fns.showJobsList=function() {
 			+'<td/><td/><td><select id="fm-filter-status"><option value=""/></select></td><td/></tr>'
 			+'</thead><tbody/></table>')
 			.appendTo($content);
-		// }
-		// { dates
-		$('#fm-date-from').val(daysFrom);
-		$('#fm-date-to').val(daysTo);
-		$('#fm-date-from, #fm-date-to')
-			.each(function() {
-				var $this=$(this);
-				var days=+$this.val();
-				var now=new Date();
-				now.setHours(0);
-				now.setMinutes(0);
-				now.setSeconds(0);
-				now.setMilliseconds(0);
-				var then=new Date();
-				then.setDate(now.getDate()+days);
-				var $date=$('<input class="date"/>')
+			// }
+			// { dates
+			$('#fm-date-from').val(daysFrom);
+			$('#fm-date-to').val(daysTo);
+			$('#fm-date-from, #fm-date-to')
+				.each(function() {
+					var $this=$(this);
+					var days=+$this.val();
+					var now=new Date();
+					now.setHours(0);
+					now.setMinutes(0);
+					now.setSeconds(0);
+					now.setMilliseconds(0);
+					var then=new Date();
+					then.setDate(now.getDate()+days);
+					var $date=$('<input class="date"/>')
 					.change(function() {
 						var d=$(this).datepicker('getDate');
 						$this.val(Math.ceil((d-now-7200000) / 86400000)).change();
 					})
 					.insertAfter($this);
-				fm.fns.datePicker([$date, then.toYMD()]);
-			})
-			.change(function() {
-				daysFrom=$('#fm-date-from').val();
-				daysTo=$('#fm-date-to').val();
-				localStorage.portalDaysFrom=daysFrom;
-				localStorage.portalDaysTo=daysTo;
-				$table.draw(false);
-			})
-			.blur();
-		// }
+					fm.fns.datePicker([$date, then.toYMD()]);
+				})
+				.change(function() {
+					daysFrom=$('#fm-date-from').val();
+					daysTo=$('#fm-date-to').val();
+					localStorage.portalDaysFrom=daysFrom;
+					localStorage.portalDaysTo=daysTo;
+					$table.draw(false);
+				})
+				.blur();
+			// }
 		// { add statuses filter
 		var statuses=[];
 		for (var i=0;i<fm.job_statuses.length;++i) {
@@ -258,4 +269,5 @@ fm.fns.showJobsList=function() {
 		}
 	});
 	return false;
+	});
 };
