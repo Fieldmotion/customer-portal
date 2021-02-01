@@ -516,7 +516,7 @@ fm.fns.pageLogin=function() {
 	});
 };
 fm.fns.pageMain=function() {
-	fm.$wrapper.empty().html('<div id="fm-menu"/><div id="fm-content"/>');
+	fm.$wrapper.empty().append(['<div id="fm-menu"/>', '<div id="fm-content"/>']);
 	fm.fns.whenFunctionsExist(['showMenu', 'showJobsList'], function() {
 		fm.fns.showMenu();
 		fm.fns.showJobsList();
