@@ -117,7 +117,8 @@ fm.fns.showFiles=function() {
 						return alert(ret.error);
 					}
 					if (ret.url) {
-						document.location=ret.url;
+						var $form=$('<form target="_blank"/>').prop('action', ret.url).appendTo('body');
+						$form.submit().remove();
 					}
 				});
 				return false;
