@@ -431,14 +431,17 @@ fm.fns.initialise=function() {
 		fm.client_id=+$script.data('cid');
 	}
 	// { make sure backlink exists
-	var $backlink=$('#fm-customer-portal+a[href="https://fieldmotion.com/"],a[href="https://fieldmotion.com/"]');
+	var $backlink=$('#fm-customer-portal+a[href="https://fieldmotion.com/"]');
+	if ($backlink.length<1) {
+		$backlink=$('a[href="https://fieldmotion.com/"]');
+	}
 	if (!$backlink.length || !$backlink.is('a') || $backlink.prop('href')!='https://fieldmotion.com/' || $backlink.text().toLowerCase()!='fieldmotion') {
 		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediately followed by a link to https://fieldmotion.com/');
 	}
 	// }
 	fm.url=$script.data('url')||'https://p.fieldmotion.com/customers-api/';
 	fm.scriptUrl=$script.prop('src').replace(/\/[^/]*$/, '');
-	fm.$wrapper=$('<div id="fm-customer-portal"></div>').insertBefore($backlink);
+	fm.$wrapper=$('<div id="fm-customer-portal"></div>').insertBefore($backlink[0]);
 	fm.fns.checkLoginStatus();
 	$('<style>@import "'+fm.scriptUrl+'/style.css";</style>').appendTo('head');
 };
@@ -516,7 +519,7 @@ fm.fns.pageLogin=function() {
 	});
 };
 fm.fns.pageMain=function() {
-	fm.$wrapper.empty().html('<div id="fm-menu"/><div id="fm-content"/>');
+	fm.$wrapper.empty().append(['<div id="fm-menu"/>', '<div id="fm-content"/>']);
 	fm.fns.whenFunctionsExist(['showMenu', 'showJobsList'], function() {
 		fm.fns.showMenu();
 		fm.fns.showJobsList();

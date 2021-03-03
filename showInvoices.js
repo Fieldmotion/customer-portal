@@ -1,3 +1,4 @@
+/* global fm */
 fm.fns.showInvoices=function() {
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-invoices').addClass('fm-selected');
@@ -20,7 +21,7 @@ fm.fns.showInvoices=function() {
 		// }
 		// { build the DataTable
 		var $table=$tableDom.DataTable({
-			'ajax':(data, callback, settings)=>{
+			'ajax':(data, callback)=>{
 				delete data.columns;
 				$.post(fm.url+'Invoices_getDT', fm.fns.getPayLoad(data), callback);
 			},
@@ -38,7 +39,7 @@ fm.fns.showInvoices=function() {
 			'deferRender':true,
 			'paginationType':'full_numbers',
 			'processing':true,
-			'rowCallback': function(row, data, idx) {
+			'rowCallback': function(row, data) {
 				var statuses={'-1':'DRAFT', '0':'Quoted', '1':'Invoiced', '2':'Paid', '3':'Cancelled'};
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
@@ -69,7 +70,8 @@ fm.fns.showInvoices=function() {
 						return alert(ret.error);
 					}
 					if (ret.url) {
-						document.location=ret.url;
+						var $form=$('<form target="_blank"/>').prop('action', ret.url).appendTo('body');
+						$form.submit().remove();
 					}
 				});
 				return false;
@@ -85,4 +87,4 @@ fm.fns.showInvoices=function() {
 		// }
 	});
 	return false;
-}
+};
