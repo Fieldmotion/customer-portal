@@ -5,7 +5,7 @@
 	min-width:40px;
 }
 #fm-content div.dataTables_length> label > select{
-	min-width:60px;
+	min-width:100px;
 }
 .fm-job-dates{
 	font-size:x-small;
