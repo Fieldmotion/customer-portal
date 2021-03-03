@@ -4,6 +4,9 @@
 	width:100%;
 	min-width:40px;
 }
+#fm-content div.dataTables_length> label > select{
+	min-width:60px;
+}
 .fm-job-dates{
 	font-size:x-small;
 }
@@ -17,6 +20,7 @@
 }
 #fm-customer-portal{
 	min-height:500px;
+	padding:1em;
 }
 #fm-customer-portal+a{
 	font-size:8px;
@@ -54,9 +58,13 @@
 	border-bottom:1px solid #fff;
 	font-weight:bold;
 }
+#fm-bar{
+	margin-bottom:1em;
+}
 #fm-bar label{
 	display:inline-block;
 	margin-right:15px;
+
 }
 #fm-bar button{
 	float:right;
@@ -75,6 +83,9 @@
 #fm-popup-job-new textarea{
 	min-height:64px;
 }
+.fm-search-general{
+	margin-right:1em;
+}
 .fm-small{
 	font-size:small;
 }
@@ -90,6 +101,7 @@
 	position:absolute;
 	left:10%;
 	right:10%;
+	top:20px;
 	background:rgba(255, 255, 255, .7);
 	border:1px solid #000;
 	border-radius:5px;
