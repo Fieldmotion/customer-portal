@@ -98,9 +98,9 @@
 	bottom:0;
 }
 .fm-dialog{
-	position:absolute;
-	left:10%;
-	right:10%;
+	position:relative;
+	width:80%;
+	margin:0 auto;
 	top:20px;
 	background:rgba(255, 255, 255, .7);
 	border:1px solid #000;
