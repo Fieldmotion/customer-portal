@@ -10,7 +10,7 @@ fm.fns.popupJobNew=function($view, $el) {
 		+'<table style="width:100%">'
 		+'<tr><th>Job Type</th><td><select id="fm-popup-form_id"/></td></tr>'
 		+'<tr><th>Preferred Time</th><td><input id="fm-popup-meeting_time" disabled autocomplete="off"/></td></tr>'
-		+'<tr><th>Notes</th><td><textarea id="fm-popup-notes"/></td></tr>'
+		+'<tr><th>Notes</th><td><textarea id="fm-popup-notes"></textarea></td></tr>'
 		+'<tr class="fm-small"><th>Name</th><td><input id="fm-popup-name"/></td></tr>'
 		+'<tr class="fm-small"><th>Phone</th><td><input id="fm-popup-phone"/></td></tr>'
 		+'<tr class="fm-small"><th>Email</th><td><input id="fm-popup-email"/></td></tr>'
