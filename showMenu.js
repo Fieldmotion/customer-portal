@@ -5,6 +5,7 @@ fm.fns.showMenu=()=>{
 	html+='<li><a href="#" class="fm-link-calendar">Calendar</a></li>';
 	html+='<li><a href="#" class="fm-link-assets">Assets</a></li>';
 	html+='<li><a href="#" class="fm-link-files">Files</a></li>';
+	html+='<li><a href="#" class="fm-link-quotes">Quotes</a></li>';
 	html+='<li><a href="#" class="fm-link-invoices">Invoices</a></li>';
 	html+='<li><a href="#" class="fm-link-logout">Log Out</a></li>';
 	html+='</ul>';
@@ -25,6 +26,12 @@ fm.fns.showMenu=()=>{
 		.on('click', '.fm-link-files', function() {
 			fm.fns.whenFunctionsExist(['showFiles'], function() {
 				fm.fns.showFiles();
+			});
+			return false;
+		})
+		.on('click', '.fm-link-quotes', function() {
+			fm.fns.whenFunctionsExist(['showQuotes'], function() {
+				fm.fns.showQuotes();
 			});
 			return false;
 		})
