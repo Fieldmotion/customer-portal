@@ -34,9 +34,9 @@ fm.fns.showQuotes=function() {
 				{'class':'fm-col-created'},
 				{'class':'fm-col-total'},
 				{'class':'fm-col-discount'},
-				{'class':'fm-col-notes', 'visible':false},
+				{'class':'fm-col-notes', 'orderable':false},
 				{'class':'fm-col-status'},
-				{'class':'fm-col-download'},
+				{'class':'fm-col-download', 'orderable':false},
 			], // }
 			'deferRender':true,
 			'paginationType':'full_numbers',
@@ -51,7 +51,34 @@ fm.fns.showQuotes=function() {
 				$('td.fm-col-created', row).text(fm.fns.dateFormat(data[4]));
 				$('td.fm-col-total', row).text((+data[5]).toFixed(2));
 				$('td.fm-col-discount', row).text(((+data[6]).toFixed(0))+'%');
-				$('td.fm-col-notes', row).text(data[7]);
+				//{ notes
+				var notes=data[7];
+				if(notes){
+					$('<button/>')
+						.text('notes')
+						.appendTo($('td.fm-col-notes', row).empty())
+						.click(()=>{
+							var zIndexHighest=()=>{
+								var h=0;
+								$('*').each(function() {
+									if ($(this).zIndex()>h) {
+										h=$(this).zIndex();
+									}
+								});
+								return h+1;
+							};
+							var $dialog=$('<div/>').text(notes).dialog({
+								'modal':true,
+								'close':()=>{
+									$dialog.remove();
+								}
+							});
+							$dialog.parent().css('z-index', zIndexHighest());
+						});
+				}else{
+					$('td.fm-col-notes', row).empty();
+				}
+				//}
 				$('td.fm-col-status', row).text(statuses[data[8]]);
 				$('<button class="fm-download">Download</button>').appendTo($('td.fm-col-download', row).empty());
 			},
