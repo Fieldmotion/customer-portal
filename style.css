@@ -121,3 +121,6 @@
 .ui-dialog{
 	z-index:1000 !important;
 }
+.ui-dialog-titlebar-close{
+	font-size:0
+}

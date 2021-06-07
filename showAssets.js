@@ -47,7 +47,14 @@ fm.fns.showAssets=function() {
 				$('td.fm-col-id', row).text(data[0]);
 				$(row).data('id', +data[0]);
 				$('td.fm-col-location', row).text(data[1][1]||'');
-				$('td.fm-col-name', row).text(data[2]||'');
+				$('<button class="fm-name" style="width:100%"></button>').text(data[2]||'').appendTo($('td.fm-col-name', row).empty()).click(function() {
+					var $this=$(this);
+					$this.attr('disabled', true);
+					fm.fns.whenFunctionsExist(['showAsset'], ()=>{
+						fm.fns.showAsset(data[0]);
+						$this.removeAttr('disabled');
+					});
+				});
 				$('td.fm-col-code', row).text(data[3]||'');
 				//{ last interaction
 				var lvdate=(fm.fns.dateFormat(data[4][0])||'');
