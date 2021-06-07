@@ -22,7 +22,6 @@ fm.fns.showAsset=id=>{
 		// { build table HTML
 		var $tableDom=$('<table style="width:100%"><thead>'
 		+'<tr><th>ID</th>'
-		+'<th>Customer</th>'
 		+'<th title="Job Reference">Ref.<br/>ours/yours</th><th>Priority</th>'
 		+'<th>Notes</th><th title="Date Created">Created</th><th>Due</th>'
 		+'<th title="Appointment Date">Job Date</th>'
@@ -88,7 +87,6 @@ fm.fns.showAsset=id=>{
 			},
 			'columns':[ // {
 				{'class':'fm-col-id'},
-				{'class':'fm-col-customer'},
 				{'class':'fm-col-ref'},
 				{'class':'fm-col-priority', 'orderable':false},
 				{'class':'fm-col-notes', 'orderable':false},
@@ -117,8 +115,7 @@ fm.fns.showAsset=id=>{
 			'paginationType':'full_numbers',
 			'processing':true,
 			'rowCallback': function(row, data) {
-				$('td.fm-col-customer', row).text(data[1][2]);
-				var ref=data[2];
+				var ref=data[1];
 				if (typeof ref!='object') {
 					ref=[ref, ''];
 				}
@@ -127,19 +124,19 @@ fm.fns.showAsset=id=>{
 					' / ',
 					$('<span class="fm-col-ref-yours"/>').text(ref[1])
 				]);
-				$('td.fm-col-priority', row).text(fm.job_priorities[data[3]]||'');
+				$('td.fm-col-priority', row).text(fm.job_priorities[data[2]]||'');
 				// { notes
-				if (!data[4]) {
-					data[4]='[]';
+				if (!data[3]) {
+					data[3]='[]';
 				}
-				else if (/^[^[{]/.test(data[4])) {
-					data[4]=JSON.stringify([
-						{'content':data[4]}
+				else if (/^[^[{]/.test(data[3])) {
+					data[3]=JSON.stringify([
+						{'content':data[3]}
 					]);
 				}
 				var notes=[], ns;
 				try {
-					ns=JSON.parse(data[4]);
+					ns=JSON.parse(data[3]);
 				}
 				catch (e) {
 					ns=[];
@@ -162,15 +159,15 @@ fm.fns.showAsset=id=>{
 				}
 				// }
 				var $table2=$('<table><tr><td colspan="2" title="job date/time"></td></tr><tr class="fm-job-dates"><td title="date created"/><td title="due date"/></tr></table>');
-				$table2.find('tr:first-child td').text(fm.fns.datetimeFormat(data[7]));
-				$table2.find('tr:nth-child(2) td:first-child').text(fm.fns.dateFormat(data[5]));
-				$table2.find('tr:nth-child(2) td:nth-child(2)').text(fm.fns.dateFormat(data[6]));
+				$table2.find('tr:first-child td').text(fm.fns.datetimeFormat(data[6]));
+				$table2.find('tr:nth-child(2) td:first-child').text(fm.fns.dateFormat(data[4]));
+				$table2.find('tr:nth-child(2) td:nth-child(2)').text(fm.fns.dateFormat(data[5]));
 				$('td.fm-col-job_date', row).empty().append($table2);
-				$('td.fm-col-dept', row).empty().append([$('<div class="fm-dept" title="department"/>').html(data[8][0]), $('<div class="fm-form" title="job type"/>').html(data[8][1])]);
-				$('td.fm-col-user', row).text(data[9]);
-				$('td.fm-col-status', row).text(fm.job_statuses[data[10]]);
+				$('td.fm-col-dept', row).empty().append([$('<div class="fm-dept" title="department"/>').html(data[7][0]), $('<div class="fm-form" title="job type"/>').html(data[7][1])]);
+				$('td.fm-col-user', row).text(data[8]);
+				$('td.fm-col-status', row).text(fm.job_statuses[data[9]]);
 				// { show report or authorisation button
-				var s=+data[10];
+				var s=+data[9];
 				var stat=fm.appointment_statuses[s];
 				var $other=$('td.fm-col-other', row).empty();
 				if (s==3) { // authorise
