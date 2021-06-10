@@ -18,7 +18,7 @@ fm.fns.showAsset=id=>{
 	function showAssetJobs() { // this is inside the showAsset function because it will *always* be called. otherwise it would be an external function
 		var daysFrom=localStorage.fmPortalDaysFrom||-7;
 		var daysTo=localStorage.fmPortalDaysTo||7;
-		var $content=$('#fm-asset-jobs').empty().html('<div id="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
+		var $content=$('#fm-asset-jobs').empty().html('<div class="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
 		// { build table HTML
 		var $tableDom=$('<table style="width:100%"><thead>'
 		+'<tr><th>ID</th>'
@@ -73,7 +73,7 @@ fm.fns.showAsset=id=>{
 		// { build the DataTable
 		var largestW=0, $searchEl;
 		var $table=$tableDom.DataTable({
-			'ajax':(data, callback)=>{
+			ajax:(data, callback)=>{
 				delete data.columns;
 				data.asset_id=id;
 				data.job_ref=$('#fm-filter-job-ref').val();
@@ -85,7 +85,7 @@ fm.fns.showAsset=id=>{
 				data.status=$('#fm-filter-status').val();
 				$.post(fm.url+'AssetJobs_getDT', fm.fns.getPayLoad(data), callback);
 			},
-			'columns':[ // {
+			columns:[ // {
 				{'class':'fm-col-id'},
 				{'class':'fm-col-ref'},
 				{'class':'fm-col-priority', 'orderable':false},
@@ -98,8 +98,8 @@ fm.fns.showAsset=id=>{
 				{'class':'fm-col-status', 'orderable':false},
 				{'class':'fm-col-other', 'orderable':false},
 			], // }
-			'deferRender':true,
-			'initComplete':()=>{
+			deferRender:true,
+			initComplete:()=>{
 				var $wrapper=$tableDom.closest('.dataTables_wrapper');
 				$wrapper
 					.prepend('<div class="dataTables_filter fm-search-general"><label>Search:<input type="search"/></label></div>');
@@ -112,9 +112,9 @@ fm.fns.showAsset=id=>{
 					});
 				$searchEl=$wrapper.find('.fm-search-general input');
 			},
-			'paginationType':'full_numbers',
-			'processing':true,
-			'rowCallback': function(row, data) {
+			paginationType:'full_numbers',
+			processing:true,
+			rowCallback: function(row, data) {
 				var ref=data[1];
 				if (typeof ref!='object') {
 					ref=[ref, ''];
@@ -245,6 +245,16 @@ fm.fns.showAsset=id=>{
 			});
 		// }
 		// }
+		if (fm.job_creation) {
+			$('<button>Create Job</button>')
+				.on('click', function() {
+					var $el=$(this);
+					fm.fns.whenFunctionsExist(['popupJobNew'], function() {
+						fm.fns.popupJobNew($table, $el, id);
+					});
+				})
+				.prependTo($content.find('.fm-bar'));
+		}
 	}
 	showAssetJobs();
 };

@@ -1,7 +1,7 @@
 // { eslint settings
 /* global fm */
 // }
-fm.fns.popupJobNew=function($view, $el) {
+fm.fns.popupJobNew=($view, $el, asset_id)=>{
 	var $wrapper=$('#fm-content');
 	var $shader=$('<div class="fm-dialog-shader"/>')
 		.appendTo($wrapper);
@@ -55,7 +55,7 @@ fm.fns.popupJobNew=function($view, $el) {
 				return alert('please choose a job type');
 			}
 			$.post(fm.url+'Job_new',
-				fm.fns.getPayLoad({'when':when, 'form_id':form_id, 'notes':notes, 'job_ref_customer':custref}),
+				fm.fns.getPayLoad({when:when, form_id:form_id, notes:notes, job_ref_customer:custref, asset_id:asset_id}),
 				function(ret) {
 					if (!ret.ok) {
 						return alert((ret||{

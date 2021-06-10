@@ -30,7 +30,7 @@ fm.fns.showJobsList=function() {
 		var daysFrom=localStorage.fmPortalDaysFrom||defaultDaysFrom;
 		var daysTo=localStorage.fmPortalDaysTo||defaultDaysTo;
 		fm.fns.requireDataTables(function() {
-			var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div id="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
+			var $content=fm.$wrapper.find('#fm-content').empty().html('<h1>Jobs List</h1><div class="fm-bar"><label>From: <input type="hidden" id="fm-date-from"/></label><label>To: <input id="fm-date-to" type="hidden"/></select></label></div>');
 			// { build table HTML
 			var $tableDom=$('<table style="width:100%"><thead>'
 			+'<tr><th>ID</th>'
@@ -266,7 +266,7 @@ fm.fns.showJobsList=function() {
 							fm.fns.popupJobNew($table, $el);
 						});
 					})
-					.prependTo('#fm-bar');
+					.prependTo($content.find('.fm-bar'));
 			}
 		});
 		return false;

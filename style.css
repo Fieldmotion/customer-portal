@@ -58,15 +58,15 @@
 	border-bottom:1px solid #fff;
 	font-weight:bold;
 }
-#fm-bar{
+.fm-bar{
 	margin-bottom:1em;
 }
-#fm-bar label{
+.fm-bar label{
 	display:inline-block;
 	margin-right:15px;
 
 }
-#fm-bar button{
+.fm-bar button{
 	float:right;
 	margin-right:15px;
 }
