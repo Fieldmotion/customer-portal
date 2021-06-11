@@ -66,7 +66,10 @@ fm.fns.showAssetInvoices=asset_id=>{
 		});
 		$tableDom
 			.on('click', '.fm-download', function() {
-				$.post(fm.url+'Invoice_download', fm.fns.getPayLoad({'id':$(this).closest('tr').data('id')}), function(ret) {
+				$.post(fm.url+'Invoice_download', fm.fns.getPayLoad({
+					id:$(this).closest('tr').data('id'),
+					asset_id:asset_id
+				}), ret=>{
 					if (ret.error) {
 						return alert(ret.error);
 					}
