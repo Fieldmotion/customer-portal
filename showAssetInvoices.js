@@ -1,5 +1,5 @@
 /* global fm */
-fm.fns.showAssetInvoices=function(asset_id) {
+fm.fns.showAssetInvoices=asset_id=>{
 	$('#fm-menu a').removeClass('fm-selected');
 	$('#fm-menu a.fm-link-invoices').addClass('fm-selected');
 	fm.fns.requireDataTables(function() {

@@ -9,13 +9,13 @@ fm.fns.showAsset=id=>{
 		+'</div>')
 		.tabs({
 			activate:(e, ui)=>{
-				var id=ui.newPanel.attr('id');
-				if (id=='fm-asset-invoices') {
+				var div_id=ui.newPanel.attr('id');
+				if (div_id=='fm-asset-invoices') {
 					fm.fns.whenFunctionsExist(['showAssetInvoices'], function() {
 						fm.fns.showAssetInvoices(id);
 					});
 				}
-				if (id=='fm-asset-jobs') {
+				if (div_id=='fm-asset-jobs') {
 					showAssetJobs();
 				}
 			}
