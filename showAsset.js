@@ -2,10 +2,23 @@
 fm.fns.showAsset=id=>{
 	var $dialog=$('<div><ul>'
 		+'<li><a href="#fm-asset-jobs">Jobs List</a></li>'
+		+'<li><a href="#fm-asset-invoices">Invoices</a></li>'
 		+'</ul>'
-		+'<div id="fm-asset-jobs"/>'
+		+'<div id="fm-asset-jobs"></div>'
+		+'<div id="fm-asset-invoices"></div>'
 		+'</div>')
 		.tabs({
+			activate:(e, ui)=>{
+				var id=ui.newPanel.attr('id');
+				if (id=='fm-asset-invoices') {
+					fm.fns.whenFunctionsExist(['showAssetInvoices'], function() {
+						fm.fns.showAssetInvoices(id);
+					});
+				}
+				if (id=='fm-asset-jobs') {
+					showAssetJobs();
+				}
+			}
 		})
 		.dialog({
 			modal:true,
