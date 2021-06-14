@@ -124,3 +124,4 @@
 html body .ui-widget button.ui-dialog-titlebar-close{
 	font-size:0
 }
+html body .ui-widget-shadow.ui-tooltip{opacity:1}
