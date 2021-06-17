@@ -128,6 +128,13 @@ fm.fns.showJobsList=function() {
 				'paginationType':'full_numbers',
 				'processing':true,
 				'rowCallback': function(row, data) {
+					var details={
+						customer_type:data[1][0],
+						customer_id:data[1][1],
+						job_ref:data[2][0],
+						cjob_ref:data[2][1],
+					};
+					$(row).data('details', details);
 					$('td.fm-col-customer', row).text(data[1][2]);
 					var ref=data[2];
 					if (typeof ref!='object') {
@@ -171,7 +178,7 @@ fm.fns.showJobsList=function() {
 					else {
 						$('td.fm-col-notes', row).text('');
 					}
-					// }
+					// }}
 					var $table2=$('<table><tr><td colspan="2" title="job date/time"></td></tr><tr class="fm-job-dates"><td title="date created"/><td title="due date"/></tr></table>');
 					$table2.find('tr:first-child td').text(fm.fns.datetimeFormat(data[7]));
 					$table2.find('tr:nth-child(2) td:first-child').text(fm.fns.dateFormat(data[5]));
@@ -268,6 +275,19 @@ fm.fns.showJobsList=function() {
 					})
 					.prependTo($content.find('.fm-bar'));
 			}
+			$tableDom.tooltip({
+				items:'.fm-col-customer',
+				position:{ my: 'left top', at: 'left+15 top+30'},
+				content:function() {
+					var details=$(this).closest('tr').data('details');
+					if (!details) {
+						return false;
+					}
+					var $el=$('<div/>').text('...');
+					fm.fns.getJobTooltipContents(details, $el);
+					return $el;
+				}
+			});
 		});
 		return false;
 	});

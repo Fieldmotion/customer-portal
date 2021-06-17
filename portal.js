@@ -1,631 +1,736 @@
 /* global fm */
-window.fm={'fns':[]};
-fm.fns.checkLoginStatus=function() {
-	try {
-		fm.credentials=JSON.parse(localStorage.fm_cp_credentials);
-		if (fm.credentials.client_id) {
-			fm.client_id=fm.credentials.client_id;
-		}
-	}
-	catch(e) {
-		return fm.fns.pageLogin();
-	}
-	if (fm.credentials===undefined) {
-		return fm.fns.pageLogin();
-	}
-	$.post(fm.url+'Login_check', fm.fns.getPayLoad(), function(ret) {
-		if (ret && ret.ok && ret.ok=='1') {
-			fm.date_format=ret.settings['date-format']||'Y-m-d';
-			fm.time_format=ret.settings['time-format']||'24h';
-			fm.job_creation=ret.settings['job-creation']||0;
-			fm.appointment_statuses=JSON.parse(
-				ret.settings['appointment-statuses']
-				||'[{"name":"Incomplete"},{"name":"Complete"},{"name":"Processed"},{"name":"Requires Customer Authorisation"},{"name":"Authorised"}]'
-			);
-			fm.contact=ret.contact;
-			return fm.fns.pageMain();
-		}
-		else {
-			return fm.fns.pageLogin();
-		}
-	});
-};
-fm.fns.dateFormat=function(d) {
-	function v(a) {
-		return +a<10?'0'+a:a;
-	}
-	if (d===null || d===undefined || d==='' || d===0) {
-		return '';
-	}
-	if (typeof d==='number') {
-		d=new Date(d);
-	}
-	if (d.toYMD===undefined) {
-		d=new Date(d.replace(' ', 'T')); // convert to ISO 8601 first, then into Time
-	}
-	if ($.inArray(fm.date_format, ['dd/mm/yy', 'mm-dd-yy', 'yy-mm-dd', 'dd-mm-yy'])>-1) {
-		var m=v(d.getMonth()+1), y=d.getFullYear();
-		d=v(d.getDate());
-		if (isNaN(y) || isNaN(m) || isNaN(d)) {
-			m='--';
-			y='----';
-			d='--';
-		}
-		return fm.date_format
-			.replace(/mm/, m)
-			.replace(/yy/, y)
-			.replace(/dd/, d);
-	}
-	function php_date_format(format, timestamp) {
-		// see https://github.com/kvz/locutus/blob/master/src/php/datetime/date.js
-		var jsdate, f;
-		var txtWords = [
-			'Sun', 'Mon', 'Tues', 'Wednes', 'Thurs', 'Fri', 'Satur',
-			'January', 'February', 'March', 'April', 'May', 'June',
-			'July', 'August', 'September', 'October', 'November', 'December'
-		];
-		var formatChr = /\\?(.?)/gi;
-		var formatChrCb = function (t, s) {
-			return f[t] ? f[t]() : s;
-		};
-		var _pad = function (n, c) {
-			n = String(n);
-			while (n.length < c) {
-				n = '0' + n;
-			}
-			return n;
-		};
-		f = {
-			// Day
-			d: function () {
-				// Day of month w/leading 0; 01..31
-				return _pad(f.j(), 2);
-			},
-			D: function () {
-				// Shorthand day name; Mon...Sun
-				return f.l()
-					.slice(0, 3);
-			},
-			j: function () {
-				// Day of month; 1..31
-				return jsdate.getDate();
-			},
-			l: function () {
-				// Full day name; Monday...Sunday
-				return txtWords[f.w()] + 'day';
-			},
-			N: function () {
-				// ISO-8601 day of week; 1[Mon]..7[Sun]
-				return f.w() || 7;
-			},
-			S: function () {
-				// Ordinal suffix for day of month; st, nd, rd, th
-				var j = f.j();
-				var i = j % 10;
-				if (i <= 3 && parseInt((j % 100) / 10, 10) === 1) {
-					i = 0;
+window.fm={
+	customerDetails:[],
+	fns:{
+		checkLoginStatus:()=>{
+			try {
+				fm.credentials=JSON.parse(localStorage.fm_cp_credentials);
+				if (fm.credentials.client_id) {
+					fm.client_id=fm.credentials.client_id;
 				}
-				return ['st', 'nd', 'rd'][i - 1] || 'th';
-			},
-			w: function () {
-				// Day of week; 0[Sun]..6[Sat]
-				return jsdate.getDay();
-			},
-			z: function () {
-				// Day of year; 0..365
-				var a = new Date(f.Y(), f.n() - 1, f.j());
-				var b = new Date(f.Y(), 0, 1);
-				return Math.round((a - b) / 864e5);
-			},
-	
-			// Week
-			W: function () {
-				// ISO-8601 week number
-				var a = new Date(f.Y(), f.n() - 1, f.j() - f.N() + 3);
-				var b = new Date(a.getFullYear(), 0, 4);
-				return _pad(1 + Math.round((a - b) / 864e5 / 7), 2);
-			},
-	
-			// Month
-			F: function () {
-				// Full month name; January...December
-				return txtWords[6 + f.n()];
-			},
-			m: function () {
-				// Month w/leading 0; 01...12
-				return _pad(f.n(), 2);
-			},
-			M: function () {
-				// Shorthand month name; Jan...Dec
-				return f.F()
-					.slice(0, 3);
-			},
-			n: function () {
-				// Month; 1...12
-				return jsdate.getMonth() + 1;
-			},
-			t: function () {
-				// Days in month; 28...31
-				return (new Date(f.Y(), f.n(), 0))
-					.getDate();
-			},
-	
-			// Year
-			L: function () {
-				// Is leap year?; 0 or 1
-				var j = f.Y();
-				return j % 4 === 0 & j % 100 !== 0 | j % 400 === 0;
-			},
-			o: function () {
-				// ISO-8601 year
-				var n = f.n();
-				var W = f.W();
-				var Y = f.Y();
-				return Y + (n === 12 && W < 9 ? 1 : n === 1 && W > 9 ? -1 : 0);
-			},
-			Y: function () {
-				// Full year; e.g. 1980...2010
-				return jsdate.getFullYear();
-			},
-			y: function () {
-				// Last two digits of year; 00...99
-				return f.Y()
-					.toString()
-					.slice(-2);
-			},
-	
-			// Time
-			a: function () {
-				// am or pm
-				return jsdate.getHours() > 11 ? 'pm' : 'am';
-			},
-			A: function () {
-				// AM or PM
-				return f.a()
-					.toUpperCase();
-			},
-			B: function () {
-				// Swatch Internet time; 000..999
-				var H = jsdate.getUTCHours() * 36e2;
-				// Hours
-				var i = jsdate.getUTCMinutes() * 60;
-				// Minutes
-				// Seconds
-				var s = jsdate.getUTCSeconds();
-				return _pad(Math.floor((H + i + s + 36e2) / 86.4) % 1e3, 3);
-			},
-			g: function () {
-				// 12-Hours; 1..12
-				return f.G() % 12 || 12;
-			},
-			G: function () {
-				// 24-Hours; 0..23
-				return jsdate.getHours();
-			},
-			h: function () {
-				// 12-Hours w/leading 0; 01..12
-				return _pad(f.g(), 2);
-			},
-			H: function () {
-				// 24-Hours w/leading 0; 00..23
-				return _pad(f.G(), 2);
-			},
-			i: function () {
-				// Minutes w/leading 0; 00..59
-				return _pad(jsdate.getMinutes(), 2);
-			},
-			s: function () {
-				// Seconds w/leading 0; 00..59
-				return _pad(jsdate.getSeconds(), 2);
-			},
-			u: function () {
-				// Microseconds; 000000-999000
-				return _pad(jsdate.getMilliseconds() * 1000, 6);
-			},
-	
-			// Timezone
-			e: function () {
-				// Timezone identifier; e.g. Atlantic/Azores, ...
-				// The following works, but requires inclusion of the very large
-				// timezone_abbreviations_list() function.
-				/*							return that.date_default_timezone_get();
-				 */
-				var msg = 'Not supported (see source code of date() for timezone on how to add support)';
-				throw new Error(msg);
-			},
-			I: function () {
-				// DST observed?; 0 or 1
-				// Compares Jan 1 minus Jan 1 UTC to Jul 1 minus Jul 1 UTC.
-				// If they are not equal, then DST is observed.
-				var a = new Date(f.Y(), 0);
-				// Jan 1
-				var c = Date.UTC(f.Y(), 0);
-				// Jan 1 UTC
-				var b = new Date(f.Y(), 6);
-				// Jul 1
-				// Jul 1 UTC
-				var d = Date.UTC(f.Y(), 6);
-				return ((a - c) !== (b - d)) ? 1 : 0;
-			},
-			O: function () {
-				// Difference to GMT in hour format; e.g. +0200
-				var tzo = jsdate.getTimezoneOffset();
-				var a = Math.abs(tzo);
-				return (tzo > 0 ? '-' : '+') + _pad(Math.floor(a / 60) * 100 + a % 60, 4);
-			},
-			P: function () {
-				// Difference to GMT w/colon; e.g. +02:00
-				var O = f.O();
-				return (O.substr(0, 3) + ':' + O.substr(3, 2));
-			},
-			T: function () {
-				return 'UTC';
-			},
-			Z: function () {
-				// Timezone offset in seconds (-43200...50400)
-				return -jsdate.getTimezoneOffset() * 60;
-			},
-	
-			// Full Date/Time
-			c: function () {
-				// ISO-8601 date.
-				return 'Y-m-d\\TH:i:sP'.replace(formatChr, formatChrCb);
-			},
-			r: function () {
-				// RFC 2822
-				return 'D, d M Y H:i:s O'.replace(formatChr, formatChrCb);
-			},
-			U: function () {
-				// Seconds since UNIX epoch
-				return jsdate / 1000 | 0;
 			}
-		};
-		var _date = function (format, timestamp) {
-			jsdate = (timestamp === undefined ? new Date() // Not provided
-				: (timestamp instanceof Date) ? new Date(timestamp) // JS Date()
-					: new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
-			);
-			return format.replace(formatChr, formatChrCb);
-		};
-		return _date(format, timestamp);
-	}
-	return php_date_format(fm.date_format, d);
-};
-fm.fns.datetimeFormat=function(d) {
-	function v(a) {
-		return +a<10?'0'+a:a;
-	}
-	if (d===null || d===undefined || d==='' || d==='0000-00-00 00:00:00' || d==='0000-00-00 00:00' || (d.toYMD && d.toYMD()=='1970-01-01')) {
-		return '';
-	}
-	if (typeof d==='number' || (typeof d==='string' && d.replace(/[0-9]*/, '')=='')) {
-		if (d<9999999999) { // we need this in milliseconds, not seconds
-			d*=1000;
-		}
-		d=new Date(+d);
-	}
-	if (d.toYMD===undefined) {
-		var d1=new Date(d.replace(' ', 'T')+'Z');
-		d=new Date();
-		d.setTime(d1.getTime()+d1.getTimezoneOffset()*60*1000); // *sigh* Benjamin Franklin
-	}
-	var h=+d.getHours();
-	var time=fm.fns.dateFormat(d)+' '+fm.time_format
-		.replace(/24h/, v(h))
-		.replace(/am\/pm|AM\/PM/, (h%12))
-		+':'+v(d.getMinutes());
-	if (/am/.test(fm.time_format)) {
-		time+=h>11?'pm':'am';
-	}
-	if (/AM/.test(fm.time_format)) {
-		time+=h>11?'PM':'AM';
-	}
-	return time;
-};
-fm.fns.datePicker=function(opts) {
-	var $els=$(opts[0]);
-	$els.each(function() {
-		var $el=$(this);
-		if ($el.data('has-date-picker')) {
-			return;
-		}
-		$el.data('has-date-picker', true);
-		var $wrapper=$($el.wrap('<div class="date-wrapper"/>').closest('.date-wrapper'));
-		$wrapper.click(function() {
-			$(this).find('input').datepicker('show');
-		});
-		var $alt=$('<span class="date-alternative"></span>').insertAfter($el);
-		$el.css({
-			'visibility':'hidden',
-			'width':'1px',
-			'height':'1px',
-			'float':'right'
-		});
-		function updateAlt() {
-			var txt=opts[4]?'':($el.val()=='0000-00-00'?'-- -- --':fm.fns.dateFormat($el.datepicker('getDate')));
-			$alt.text(txt);
-		}
-		if (opts[1]||$el.val()) {
-			var v=opts[1]||$el.val();
-			if (!/^[0-9]*-[0-9]*-[0-9]*$/.test(v)) {
-				v='';
+			catch(e) {
+				return fm.fns.pageLogin();
 			}
-			$el.val(v);
-		}
-		$el
-			.datepicker({
-				'changeYear':true,
-				'changeMonth':true,
-				'dateFormat':'yy-mm-dd',
-				'yearRange':'-100:+100'
-			})
-			.change(updateAlt)
-			.blur();
-		updateAlt();
-		if (opts[2]) { // allow blank
-			$('<a href="#" class="date-clear">[x]</a>')
-				.prependTo($wrapper.css('padding-right', '20px'))
-				.click(function() {
-					$el.val('0000-00-00').change();
-					updateAlt();
-					return false;
-				});
-		}
-	});
-	if (opts[3]) { // callback
-		setTimeout(opts[3], 1);
-	}
-	return $els;
-};
-fm.fns.dateToYMD=function() {
-	var year, month, day;
-	year = String(this.getFullYear());
-	month = String(this.getMonth() + 1);
-	if (month.length == 1) {
-		month = '0' + month;
-	}
-	day = String(this.getDate());
-	if (day.length == 1) {
-		day = '0' + day;
-	}
-	return year + '-' + month + '-' + day;
-};
-fm.fns.dateToYMDHIS=function() {
-	var hour, minute;
-	hour= String(this.getHours());
-	minute= String(this.getMinutes());
-	if (hour.length == 1) {
-		hour = '0' + hour;
-	}
-	if (minute.length == 1) {
-		minute= '0' + minute;
-	}
-	return this.toYMD()+' '+hour+':'+minute+':00';
-};
-fm.fns.functionLoad=function(fn) {
-	if (fm.fns[fn]) { // already loading or loaded
-		return;
-	}
-	fm.fns[fn]=true;
-	$('<script src="'+fm.scriptUrl+'/'+fn+'.js?c='+(+new Date)+'"></script>').appendTo('head');
-};
-fm.fns.getPayLoad=function(params) {
-	var json=JSON.stringify(params);
-	var base64=btoa(json);
-	var now=(new Date).getTime();
-	var md5=window.md5(''+base64+now+fm.credentials.session_key);
-	return {
-		'b64':base64,
-		'now':now,
-		'md5':md5,
-		'sid':fm.credentials.session_id,
-		'cid':fm.client_id
-	};
-};
-fm.fns.initialise=function() {
-	var $script=$('#fm-customer-portal');
-	if (!$script.length) {
-		return alert('element with ID fm-customer-portal not found');
-	}
-	if (+$script.data('cid')) {
-		fm.client_id=+$script.data('cid');
-	}
-	// { make sure backlink exists
-	var $backlink=$('#fm-customer-portal+a[href="https://fieldmotion.com/"]');
-	if ($backlink.length<1) {
-		$backlink=$('a[href="https://fieldmotion.com/"]');
-	}
-	if (!$backlink.length || !$backlink.is('a') || $backlink.prop('href')!='https://fieldmotion.com/' || $backlink.text().toLowerCase()!='fieldmotion') {
-		return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediately followed by a link to https://fieldmotion.com/');
-	}
-	// }
-	fm.url=$script.data('url')||'https://p.fieldmotion.com/customers-api/';
-	fm.scriptUrl=$script.prop('src').replace(/\/[^/]*$/, '');
-	fm.$wrapper=$('<div id="fm-customer-portal"></div>').insertBefore($backlink[0]);
-	fm.fns.checkLoginStatus();
-	$('<style>@import "'+fm.scriptUrl+'/style.css";</style>').appendTo('head');
-};
-fm.fns.onBodyLoad=function() {
-	if (typeof jQuery==='undefined') {
-		var el=document.createElement('script'), head=document.getElementsByTagName('head')[0];
-		el.src='https://code.jquery.com/jquery-3.3.1.min.js';
-		head.appendChild(el);
-	}
-	function waitForJQuery() {
-		if (typeof jQuery==='undefined') {
-			return setTimeout(waitForJQuery, 1);
-		}
-		window.$=jQuery;
-		$.cachedScript = function( url, options ) {
-			options = $.extend( options || {}, {
-				dataType: 'script',
-				cache: true,
-				url: url
+			if (fm.credentials===undefined) {
+				return fm.fns.pageLogin();
+			}
+			$.post(fm.url+'Login_check', fm.fns.getPayLoad(), function(ret) {
+				if (ret && ret.ok && ret.ok=='1') {
+					fm.date_format=ret.settings['date-format']||'Y-m-d';
+					fm.time_format=ret.settings['time-format']||'24h';
+					fm.job_creation=ret.settings['job-creation']||0;
+					fm.appointment_statuses=JSON.parse(
+						ret.settings['appointment-statuses']
+						||'[{"name":"Incomplete"},{"name":"Complete"},{"name":"Processed"},{"name":"Requires Customer Authorisation"},{"name":"Authorised"}]'
+					);
+					fm.contact=ret.contact;
+					return fm.fns.pageMain();
+				}
+				else {
+					return fm.fns.pageLogin();
+				}
 			});
-			return $.ajax( options );
-		};
-		if (typeof jQuery.ui === 'undefined' || typeof jQuery.ui.datepicker==='undefined') {
-			var el=document.createElement('script'), head=document.getElementsByTagName('head')[0];
-			el.src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
-			head.appendChild(el);
-			el=document.createElement('link');
-			el.href='http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css';
-			head.appendChild(el);
-		}
-		waitForJQueryUI();
-	}
-	function waitForJQueryUI() {
-		if (typeof jQuery.ui === 'undefined') {
-			return setTimeout(waitForJQueryUI, 1);
-		}
-		fm.fns.initialise();
-	}
-	setTimeout(waitForJQuery, 1);
-};
-fm.fns.pageLogin=function() {
-	var $login=$('<table>'
-		+'<tr><th>Client ID</th><td><input class="fm-client-id"/></td></tr>'
-		+'<tr><th>Customer ID</th><td><input class="fm-customer-id"/></td></tr>'
-		+'<tr><th>Password</th><td><input type="password" class="fm-customer-password"/></td></tr>'
-		+'<tr><td>&nbsp;</td><td><button class="fm-login">Log In</button></td></tr>'
-		+'</table>')
-		.appendTo(fm.$wrapper.empty());
-	if (fm.client_id) {
-		$login.find('.fm-client-id').val(fm.client_id).closest('tr').css('display', 'none');
-	}
-	$login.find('button').click(()=>{
-		var client_id=+$login.find('.fm-client-id').val(), cid=+$login.find('.fm-customer-id').val(), pass=$login.find('.fm-customer-password').val();
-		if (!client_id || !cid || !pass) {
-			return alert('Please fill in all fields');
-		}
-		$.post(fm.url+'Login_login', {
-			'client_id':client_id,
-			'customer_id':cid,
-			'password':pass
-		}, function(ret) {
-			if (ret.error) {
-				return alert(ret.error);
+		},
+		dateFormat:d=>{
+			function v(a) {
+				return +a<10?'0'+a:a;
 			}
-			fm.client_id=client_id;
-			fm.credentials={
-				'client_id':client_id,
-				'session_id':ret.session_id,
-				'session_key':ret.session_key
-			};
-			localStorage.fm_cp_credentials=JSON.stringify(fm.credentials);
-			fm.fns.checkLoginStatus();
-		});
-		return false;
-	});
-};
-fm.fns.pageMain=function() {
-	fm.$wrapper.empty().append(['<div id="fm-menu"/>', '<div id="fm-content"/>']);
-	fm.fns.whenFunctionsExist(['showMenu', 'showJobsList'], function() {
-		fm.fns.showMenu();
-		fm.fns.showJobsList();
-	});
-};
-fm.fns.requireDataTables=function(callback) {
-	if ($.fn.DataTable) {
-		return callback();
-	}
-	$('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>').appendTo('head');
-	$.cachedScript('https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js');
-	function wait() {
-		function resizeDatatables() {
-			var tables=$.fn.dataTable.fnTables(true);
-			if (tables.length>0) {
-				$(tables).dataTable().fnAdjustColumnSizing();
+			if (d===null || d===undefined || d==='' || d===0) {
+				return '';
 			}
-		}
-		if ($.fn.DataTable) {
-			$.fn.dataTable.defaults.column.render=v=>{
-				var hsc=v=>{
-					if (typeof v=='string') {
-						return htmlspecialchars(v);
+			if (typeof d==='number') {
+				d=new Date(d);
+			}
+			if (d.toYMD===undefined) {
+				d=new Date(d.replace(' ', 'T')); // convert to ISO 8601 first, then into Time
+			}
+			if ($.inArray(fm.date_format, ['dd/mm/yy', 'mm-dd-yy', 'yy-mm-dd', 'dd-mm-yy'])>-1) {
+				var m=v(d.getMonth()+1), y=d.getFullYear();
+				d=v(d.getDate());
+				if (isNaN(y) || isNaN(m) || isNaN(d)) {
+					m='--';
+					y='----';
+					d='--';
+				}
+				return fm.date_format
+					.replace(/mm/, m)
+					.replace(/yy/, y)
+					.replace(/dd/, d);
+			}
+			function php_date_format(format, timestamp) {
+				// see https://github.com/kvz/locutus/blob/master/src/php/datetime/date.js
+				var jsdate, f;
+				var txtWords = [
+					'Sun', 'Mon', 'Tues', 'Wednes', 'Thurs', 'Fri', 'Satur',
+					'January', 'February', 'March', 'April', 'May', 'June',
+					'July', 'August', 'September', 'October', 'November', 'December'
+				];
+				var formatChr = /\\?(.?)/gi;
+				var formatChrCb = function (t, s) {
+					return f[t] ? f[t]() : s;
+				};
+				var _pad = function (n, c) {
+					n = String(n);
+					while (n.length < c) {
+						n = '0' + n;
 					}
-					else if (typeof v=='object') {
-						if (v===null) {
-							return null;
+					return n;
+				};
+				f = {
+					// Day
+					d: function () {
+						// Day of month w/leading 0; 01..31
+						return _pad(f.j(), 2);
+					},
+					D: function () {
+						// Shorthand day name; Mon...Sun
+						return f.l()
+							.slice(0, 3);
+					},
+					j: function () {
+						// Day of month; 1..31
+						return jsdate.getDate();
+					},
+					l: function () {
+						// Full day name; Monday...Sunday
+						return txtWords[f.w()] + 'day';
+					},
+					N: function () {
+						// ISO-8601 day of week; 1[Mon]..7[Sun]
+						return f.w() || 7;
+					},
+					S: function () {
+						// Ordinal suffix for day of month; st, nd, rd, th
+						var j = f.j();
+						var i = j % 10;
+						if (i <= 3 && parseInt((j % 100) / 10, 10) === 1) {
+							i = 0;
 						}
-						Object.keys(v).forEach(k=>{
-							v[k]=hsc(v[k]);
-						});
-						return v;
-					}
-					else {
-						return v;
+						return ['st', 'nd', 'rd'][i - 1] || 'th';
+					},
+					w: function () {
+						// Day of week; 0[Sun]..6[Sat]
+						return jsdate.getDay();
+					},
+					z: function () {
+						// Day of year; 0..365
+						var a = new Date(f.Y(), f.n() - 1, f.j());
+						var b = new Date(f.Y(), 0, 1);
+						return Math.round((a - b) / 864e5);
+					},
+			
+					// Week
+					W: function () {
+						// ISO-8601 week number
+						var a = new Date(f.Y(), f.n() - 1, f.j() - f.N() + 3);
+						var b = new Date(a.getFullYear(), 0, 4);
+						return _pad(1 + Math.round((a - b) / 864e5 / 7), 2);
+					},
+			
+					// Month
+					F: function () {
+						// Full month name; January...December
+						return txtWords[6 + f.n()];
+					},
+					m: function () {
+						// Month w/leading 0; 01...12
+						return _pad(f.n(), 2);
+					},
+					M: function () {
+						// Shorthand month name; Jan...Dec
+						return f.F()
+							.slice(0, 3);
+					},
+					n: function () {
+						// Month; 1...12
+						return jsdate.getMonth() + 1;
+					},
+					t: function () {
+						// Days in month; 28...31
+						return (new Date(f.Y(), f.n(), 0))
+							.getDate();
+					},
+			
+					// Year
+					L: function () {
+						// Is leap year?; 0 or 1
+						var j = f.Y();
+						return j % 4 === 0 & j % 100 !== 0 | j % 400 === 0;
+					},
+					o: function () {
+						// ISO-8601 year
+						var n = f.n();
+						var W = f.W();
+						var Y = f.Y();
+						return Y + (n === 12 && W < 9 ? 1 : n === 1 && W > 9 ? -1 : 0);
+					},
+					Y: function () {
+						// Full year; e.g. 1980...2010
+						return jsdate.getFullYear();
+					},
+					y: function () {
+						// Last two digits of year; 00...99
+						return f.Y()
+							.toString()
+							.slice(-2);
+					},
+			
+					// Time
+					a: function () {
+						// am or pm
+						return jsdate.getHours() > 11 ? 'pm' : 'am';
+					},
+					A: function () {
+						// AM or PM
+						return f.a()
+							.toUpperCase();
+					},
+					B: function () {
+						// Swatch Internet time; 000..999
+						var H = jsdate.getUTCHours() * 36e2;
+						// Hours
+						var i = jsdate.getUTCMinutes() * 60;
+						// Minutes
+						// Seconds
+						var s = jsdate.getUTCSeconds();
+						return _pad(Math.floor((H + i + s + 36e2) / 86.4) % 1e3, 3);
+					},
+					g: function () {
+						// 12-Hours; 1..12
+						return f.G() % 12 || 12;
+					},
+					G: function () {
+						// 24-Hours; 0..23
+						return jsdate.getHours();
+					},
+					h: function () {
+						// 12-Hours w/leading 0; 01..12
+						return _pad(f.g(), 2);
+					},
+					H: function () {
+						// 24-Hours w/leading 0; 00..23
+						return _pad(f.G(), 2);
+					},
+					i: function () {
+						// Minutes w/leading 0; 00..59
+						return _pad(jsdate.getMinutes(), 2);
+					},
+					s: function () {
+						// Seconds w/leading 0; 00..59
+						return _pad(jsdate.getSeconds(), 2);
+					},
+					u: function () {
+						// Microseconds; 000000-999000
+						return _pad(jsdate.getMilliseconds() * 1000, 6);
+					},
+			
+					// Timezone
+					e: function () {
+						// Timezone identifier; e.g. Atlantic/Azores, ...
+						// The following works, but requires inclusion of the very large
+						// timezone_abbreviations_list() function.
+						/*							return that.date_default_timezone_get();
+						 */
+						var msg = 'Not supported (see source code of date() for timezone on how to add support)';
+						throw new Error(msg);
+					},
+					I: function () {
+						// DST observed?; 0 or 1
+						// Compares Jan 1 minus Jan 1 UTC to Jul 1 minus Jul 1 UTC.
+						// If they are not equal, then DST is observed.
+						var a = new Date(f.Y(), 0);
+						// Jan 1
+						var c = Date.UTC(f.Y(), 0);
+						// Jan 1 UTC
+						var b = new Date(f.Y(), 6);
+						// Jul 1
+						// Jul 1 UTC
+						var d = Date.UTC(f.Y(), 6);
+						return ((a - c) !== (b - d)) ? 1 : 0;
+					},
+					O: function () {
+						// Difference to GMT in hour format; e.g. +0200
+						var tzo = jsdate.getTimezoneOffset();
+						var a = Math.abs(tzo);
+						return (tzo > 0 ? '-' : '+') + _pad(Math.floor(a / 60) * 100 + a % 60, 4);
+					},
+					P: function () {
+						// Difference to GMT w/colon; e.g. +02:00
+						var O = f.O();
+						return (O.substr(0, 3) + ':' + O.substr(3, 2));
+					},
+					T: function () {
+						return 'UTC';
+					},
+					Z: function () {
+						// Timezone offset in seconds (-43200...50400)
+						return -jsdate.getTimezoneOffset() * 60;
+					},
+			
+					// Full Date/Time
+					c: function () {
+						// ISO-8601 date.
+						return 'Y-m-d\\TH:i:sP'.replace(formatChr, formatChrCb);
+					},
+					r: function () {
+						// RFC 2822
+						return 'D, d M Y H:i:s O'.replace(formatChr, formatChrCb);
+					},
+					U: function () {
+						// Seconds since UNIX epoch
+						return jsdate / 1000 | 0;
 					}
 				};
-				return hsc(v);
+				var _date = function (format, timestamp) {
+					jsdate = (timestamp === undefined ? new Date() // Not provided
+						: (timestamp instanceof Date) ? new Date(timestamp) // JS Date()
+							: new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
+					);
+					return format.replace(formatChr, formatChrCb);
+				};
+				return _date(format, timestamp);
+			}
+			return php_date_format(fm.date_format, d);
+		},
+		datetimeFormat:d=>{
+			function v(a) {
+				return +a<10?'0'+a:a;
+			}
+			if (d===null || d===undefined || d==='' || d==='0000-00-00 00:00:00' || d==='0000-00-00 00:00' || (d.toYMD && d.toYMD()=='1970-01-01')) {
+				return '';
+			}
+			if (typeof d==='number' || (typeof d==='string' && d.replace(/[0-9]*/, '')=='')) {
+				if (d<9999999999) { // we need this in milliseconds, not seconds
+					d*=1000;
+				}
+				d=new Date(+d);
+			}
+			if (d.toYMD===undefined) {
+				var d1=new Date(d.replace(' ', 'T')+'Z');
+				d=new Date();
+				d.setTime(d1.getTime()+d1.getTimezoneOffset()*60*1000); // *sigh* Benjamin Franklin
+			}
+			var h=+d.getHours();
+			var time=fm.fns.dateFormat(d)+' '+fm.time_format
+				.replace(/24h/, v(h))
+				.replace(/am\/pm|AM\/PM/, (h%12))
+				+':'+v(d.getMinutes());
+			if (/am/.test(fm.time_format)) {
+				time+=h>11?'pm':'am';
+			}
+			if (/AM/.test(fm.time_format)) {
+				time+=h>11?'PM':'AM';
+			}
+			return time;
+		},
+		datePicker:opts=>{
+			var $els=$(opts[0]);
+			$els.each(function() {
+				var $el=$(this);
+				if ($el.data('has-date-picker')) {
+					return;
+				}
+				$el.data('has-date-picker', true);
+				var $wrapper=$($el.wrap('<div class="date-wrapper"/>').closest('.date-wrapper'));
+				$wrapper.click(function() {
+					$(this).find('input').datepicker('show');
+				});
+				var $alt=$('<span class="date-alternative"></span>').insertAfter($el);
+				$el.css({
+					'visibility':'hidden',
+					'width':'1px',
+					'height':'1px',
+					'float':'right'
+				});
+				function updateAlt() {
+					var txt=opts[4]?'':($el.val()=='0000-00-00'?'-- -- --':fm.fns.dateFormat($el.datepicker('getDate')));
+					$alt.text(txt);
+				}
+				if (opts[1]||$el.val()) {
+					var v=opts[1]||$el.val();
+					if (!/^[0-9]*-[0-9]*-[0-9]*$/.test(v)) {
+						v='';
+					}
+					$el.val(v);
+				}
+				$el
+					.datepicker({
+						'changeYear':true,
+						'changeMonth':true,
+						'dateFormat':'yy-mm-dd',
+						'yearRange':'-100:+100'
+					})
+					.change(updateAlt)
+					.blur();
+				updateAlt();
+				if (opts[2]) { // allow blank
+					$('<a href="#" class="date-clear">[x]</a>')
+						.prependTo($wrapper.css('padding-right', '20px'))
+						.click(function() {
+							$el.val('0000-00-00').change();
+							updateAlt();
+							return false;
+						});
+				}
+			});
+			if (opts[3]) { // callback
+				setTimeout(opts[3], 1);
+			}
+			return $els;
+		},
+		dateToYMD:function() {
+			var year, month, day;
+			year = String(this.getFullYear());
+			month = String(this.getMonth() + 1);
+			if (month.length == 1) {
+				month = '0' + month;
+			}
+			day = String(this.getDate());
+			if (day.length == 1) {
+				day = '0' + day;
+			}
+			return year + '-' + month + '-' + day;
+		},
+		dateToYMDHIS:function() {
+			var hour, minute;
+			hour= String(this.getHours());
+			minute= String(this.getMinutes());
+			if (hour.length == 1) {
+				hour = '0' + hour;
+			}
+			if (minute.length == 1) {
+				minute= '0' + minute;
+			}
+			return this.toYMD()+' '+hour+':'+minute+':00';
+		},
+		functionLoad:fn=>{
+			if (fm.fns[fn]) { // already loading or loaded
+				return;
+			}
+			fm.fns[fn]=true;
+			$('<script src="'+fm.scriptUrl+'/'+fn+'.js?c='+(+new Date)+'"></script>').appendTo('head');
+		},
+		getCustomerDetails:(type, id, callback)=>{
+			if (fm.customerDetails[type+'_'+id]) {
+				return callback(fm.customerDetails[type+'_'+id]);
+			}
+			else {
+				if (type===1) { // asset
+					$.post(fm.url+'Asset_get', fm.fns.getPayLoad({
+						id:id
+					}), ret=>{
+						if (ret.error) {
+							return callback(ret);
+						}
+						var obj=ret.obj;
+						fm.customerDetails[type+'_'+id]=obj;
+						var p_id=0;
+						if (+obj.location_id>0 && +obj.location_type==1) {
+							p_id=+ret.obj.location_id;
+						}
+						else if (+obj.owner_id>0) {
+							p_id=+obj.owner_id;
+						}
+						if (p_id>0) {
+							$.post(fm.url+'Customer_get', fm.fns.getPayLoad({
+								id:p_id
+							}), ret=>{
+								obj.parent=ret.obj;
+								fm.customerDetails[type+'_'+id]=obj;
+								callback(obj);
+							});
+						}
+						else {
+							callback(obj);
+						}
+					});
+				}
+				else {
+					$.post(fm.url+'Customer_get', fm.fns.getPayLoad({
+						id:id
+					}), ret=>{
+						if (ret.error) {
+							return callback(ret);
+						}
+						var obj=ret.obj;
+						fm.customerDetails[type+'_'+id]=obj;
+						if (+obj.parent>0) {
+							$.post(fm.url+'Asset_get', fm.fns.getPayLoad({
+								id:obj.parent
+							}), ret=>{
+								obj.parent=ret.obj;
+								fm.customerDetails[type+'_'+id]=obj;
+								callback(obj);
+							});
+						}
+						else {
+							callback(obj);
+						}
+					});
+				}
+			}
+		},
+		getJobTooltipContents:(details, $el)=>{
+			fm.fns.getCustomerDetails(details.customer_type, details.customer_id, obj=>{
+				var $table=$('<table></table>'), $tr, address;
+				// { customer/asset name
+				$tr=$('<tr><th>For</th><td class="fm-job-for"/></tr>').appendTo($table);
+				var forName=obj.name;
+				if (obj.parent) {
+					forName=obj.parent.name+' » '+forName;
+				}
+				$table.find('.fm-job-for').text(forName);
+				// }
+				// { location
+				if (obj.location_type && +obj.location_type && obj.parent) {
+					address=[obj.parent.street_address1, obj.parent.street_address2, obj.parent.town, obj.parent.county, obj.parent.postcode, obj.parent.city, obj.parent.state, obj.parent.country];
+				}
+				else {
+					address=[obj.street_address1, obj.street_address2, obj.town, obj.county, obj.postcode, obj.city, obj.state, obj.country];
+				}
+				$tr=$('<tr><th>Location</th><td class="fm-location"/></tr>').appendTo($table);
+				$tr.find('.fm-location').text(address.filter(z=>{
+					return z||false;
+				}).join(', '));
+				// }
+				// { your job ref
+				if (details.cjob_ref) {
+					$tr=$('<tr><th>Your Job Ref</th><td class="fm-cjob_ref"/></tr>').appendTo($table);
+					$tr.find('.fm-cjob_ref').text(details.cjob_ref);
+				}
+				// }
+				// { our job ref
+				if (details.job_ref) {
+					$tr=$('<tr><th>Our Job Ref</th><td class="fm-job_ref"/></tr>').appendTo($table);
+					$tr.find('.fm-job_ref').text(details.job_ref);
+				}
+				// }
+				$table.appendTo($el.empty());
+				setTimeout(()=>{
+					$el.closest('.ui-tooltip').css('opacity', 1);
+				}, 100);
+			});
+		},
+		getPayLoad:params=>{
+			var json=JSON.stringify(params);
+			var base64=btoa(json);
+			var now=(new Date).getTime();
+			var md5=window.md5(''+base64+now+fm.credentials.session_key);
+			return {
+				'b64':base64,
+				'now':now,
+				'md5':md5,
+				'sid':fm.credentials.session_id,
+				'cid':fm.client_id
 			};
-			setTimeout(resizeDatatables, 100);
-			return callback();
-		}
-		setTimeout(wait, 1);
-	}
-	wait();
-};
-fm.fns.requireFullCalendar=function(callback) {
-	fm.fns.requireMoment(function() {
-		if ($.fn.fullCalendar) {
-			return callback();
-		}
-		$('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css"/>').appendTo('head');
-		$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js');
-		function wait() {
-			if ($.fn.fullCalendar) {
+		},
+		initialise:()=>{
+			var $script=$('#fm-customer-portal');
+			if (!$script.length) {
+				return alert('element with ID fm-customer-portal not found');
+			}
+			if (+$script.data('cid')) {
+				fm.client_id=+$script.data('cid');
+			}
+			// { make sure backlink exists
+			var $backlink=$('#fm-customer-portal+a[href="https://fieldmotion.com/"]');
+			if ($backlink.length<1) {
+				$backlink=$('a[href="https://fieldmotion.com/"]');
+			}
+			if (!$backlink.length || !$backlink.is('a') || $backlink.prop('href')!='https://fieldmotion.com/' || $backlink.text().toLowerCase()!='fieldmotion') {
+				return alert('backlink missing. please make sure that the script loading the FieldMotion portal is immediately followed by a link to https://fieldmotion.com/');
+			}
+			// }
+			fm.url=$script.data('url')||'https://p.fieldmotion.com/customers-api/';
+			fm.scriptUrl=$script.prop('src').replace(/\/[^/]*$/, '');
+			fm.$wrapper=$('<div id="fm-customer-portal"></div>').insertBefore($backlink[0]);
+			fm.fns.checkLoginStatus();
+			$('<style>@import "'+fm.scriptUrl+'/style.css";</style>').appendTo('head');
+		},
+		onBodyLoad:()=>{
+			if (typeof jQuery==='undefined') {
+				var el=document.createElement('script'), head=document.getElementsByTagName('head')[0];
+				el.src='https://code.jquery.com/jquery-3.3.1.min.js';
+				head.appendChild(el);
+			}
+			function waitForJQuery() {
+				if (typeof jQuery==='undefined') {
+					return setTimeout(waitForJQuery, 1);
+				}
+				window.$=jQuery;
+				$.cachedScript = function( url, options ) {
+					options = $.extend( options || {}, {
+						dataType: 'script',
+						cache: true,
+						url: url
+					});
+					return $.ajax( options );
+				};
+				if (typeof jQuery.ui === 'undefined' || typeof jQuery.ui.datepicker==='undefined') {
+					var el=document.createElement('script'), head=document.getElementsByTagName('head')[0];
+					el.src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+					head.appendChild(el);
+					el=document.createElement('link');
+					el.href='http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css';
+					head.appendChild(el);
+				}
+				waitForJQueryUI();
+			}
+			function waitForJQueryUI() {
+				if (typeof jQuery.ui === 'undefined') {
+					return setTimeout(waitForJQueryUI, 1);
+				}
+				fm.fns.initialise();
+			}
+			setTimeout(waitForJQuery, 1);
+		},
+		pageLogin:()=>{
+			var $login=$('<table>'
+				+'<tr><th>Client ID</th><td><input class="fm-client-id"/></td></tr>'
+				+'<tr><th>Customer ID</th><td><input class="fm-customer-id"/></td></tr>'
+				+'<tr><th>Password</th><td><input type="password" class="fm-customer-password"/></td></tr>'
+				+'<tr><td>&nbsp;</td><td><button class="fm-login">Log In</button></td></tr>'
+				+'</table>')
+				.appendTo(fm.$wrapper.empty());
+			if (fm.client_id) {
+				$login.find('.fm-client-id').val(fm.client_id).closest('tr').css('display', 'none');
+			}
+			$login.find('button').click(()=>{
+				var client_id=+$login.find('.fm-client-id').val(), cid=+$login.find('.fm-customer-id').val(), pass=$login.find('.fm-customer-password').val();
+				if (!client_id || !cid || !pass) {
+					return alert('Please fill in all fields');
+				}
+				$.post(fm.url+'Login_login', {
+					'client_id':client_id,
+					'customer_id':cid,
+					'password':pass
+				}, function(ret) {
+					if (ret.error) {
+						return alert(ret.error);
+					}
+					fm.client_id=client_id;
+					fm.credentials={
+						'client_id':client_id,
+						'session_id':ret.session_id,
+						'session_key':ret.session_key
+					};
+					localStorage.fm_cp_credentials=JSON.stringify(fm.credentials);
+					fm.fns.checkLoginStatus();
+				});
+				return false;
+			});
+		},
+		pageMain:()=>{
+			fm.$wrapper.empty().append(['<div id="fm-menu"/>', '<div id="fm-content"/>']);
+			fm.fns.whenFunctionsExist(['showMenu', 'showJobsList'], function() {
+				fm.fns.showMenu();
+				fm.fns.showJobsList();
+			});
+		},
+		requireDataTables:callback=>{
+			if ($.fn.DataTable) {
 				return callback();
 			}
-			setTimeout(wait, 1);
-		}
-		wait();
-	});
-};
-fm.fns.requireMoment=function(callback) {
-	if (window.moment) {
-		return callback();
-	}
-	$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js');
-	function wait() {
-		if (window.moment) {
-			return callback();
-		}
-		setTimeout(wait, 1);
-	}
-	wait();
-};
-fm.fns.requireDateTimePicker=function(callback) {
-	if ($.fn.datetimepicker) {
-		return callback();
-	}
-	$('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.min.css"/>').appendTo('head');
-	$.cachedScript('https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.full.min.js');
-	function wait() {
-		if ($.fn.datetimepicker) {
-			return callback();
-		}
-		setTimeout(wait, 1);
-	}
-	wait();
-};
-fm.fns.whenFunctionsExist=function(fns, callback) {
-	function checkOrLoop() {
-		var missing=0;
-		for (var i=0;i<fns.length;++i) {
-			if (!fm.fns[fns[i]]) { // load the function
-				fm.fns.functionLoad(fns[i], fm.v);
+			$('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>').appendTo('head');
+			$.cachedScript('https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js');
+			function wait() {
+				function resizeDatatables() {
+					var tables=$.fn.dataTable.fnTables(true);
+					if (tables.length>0) {
+						$(tables).dataTable().fnAdjustColumnSizing();
+					}
+				}
+				if ($.fn.DataTable) {
+					$.fn.dataTable.defaults.column.render=v=>{
+						var hsc=v=>{
+							if (typeof v=='string') {
+								return htmlspecialchars(v);
+							}
+							else if (typeof v=='object') {
+								if (v===null) {
+									return null;
+								}
+								Object.keys(v).forEach(k=>{
+									v[k]=hsc(v[k]);
+								});
+								return v;
+							}
+							else {
+								return v;
+							}
+						};
+						return hsc(v);
+					};
+					setTimeout(resizeDatatables, 100);
+					return callback();
+				}
+				setTimeout(wait, 1);
 			}
-			if (fm.fns[fns[i]]===true) { // function still loading
-				missing++;
+			wait();
+		},
+		requireFullCalendar:callback=>{
+			fm.fns.requireMoment(function() {
+				if ($.fn.fullCalendar) {
+					return callback();
+				}
+				$('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css"/>').appendTo('head');
+				$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js');
+				function wait() {
+					if ($.fn.fullCalendar) {
+						return callback();
+					}
+					setTimeout(wait, 1);
+				}
+				wait();
+			});
+		},
+		requireMoment:callback=>{
+			if (window.moment) {
+				return callback();
 			}
-		}
-		if (missing) {
-			return setTimeout(checkOrLoop, 1000);
-		}
-		callback();
+			$.cachedScript('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js');
+			function wait() {
+				if (window.moment) {
+					return callback();
+				}
+				setTimeout(wait, 1);
+			}
+			wait();
+		},
+		requireDateTimePicker:callback=>{
+			if ($.fn.datetimepicker) {
+				return callback();
+			}
+			$('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.min.css"/>').appendTo('head');
+			$.cachedScript('https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.full.min.js');
+			function wait() {
+				if ($.fn.datetimepicker) {
+					return callback();
+				}
+				setTimeout(wait, 1);
+			}
+			wait();
+		},
+		whenFunctionsExist:(fns, callback)=>{
+			function checkOrLoop() {
+				var missing=0;
+				for (var i=0;i<fns.length;++i) {
+					if (!fm.fns[fns[i]]) { // load the function
+						fm.fns.functionLoad(fns[i], fm.v);
+					}
+					if (fm.fns[fns[i]]===true) { // function still loading
+						missing++;
+					}
+				}
+				if (missing) {
+					return setTimeout(checkOrLoop, 1000);
+				}
+				callback();
+			}
+			checkOrLoop();
+		},
 	}
-	checkOrLoop();
 };
 
 function htmlspecialchars(unsafe) {
