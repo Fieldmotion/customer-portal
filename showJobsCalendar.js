@@ -47,12 +47,27 @@ fm.fns.showJobsCalendar=function() {
 				var details=$(this).data('details');
 				var $el=$('<div/>').text('...');
 				getCustomerDetails(details.customer_type, details.customer_id, obj=>{
-					var $table=$('<table><tr><th>For</th><td class="fm-job-for"/></tr></table>');
+					var $table=$('<table></table>'), $tr, address;
+					// {
+					$tr=$('<tr><th>For</th><td class="fm-job-for"/></tr>').appendTo($table);
 					var forName=obj.name;
 					if (obj.parent) {
 						forName=obj.parent.name+' » '+forName;
 					}
 					$table.find('.fm-job-for').text(forName);
+					// }
+					// { location
+					if (obj.location_type && +obj.location_type && obj.parent) {
+						address=[obj.parent.street_address1, obj.parent.street_address2, obj.parent.town, obj.parent.county, obj.parent.postcode, obj.parent.city, obj.parent.state, obj.parent.country];
+					}
+					else {
+						address=[obj.street_address1, obj.street_address2, obj.town, obj.county, obj.postcode, obj.city, obj.state, obj.country];
+					}
+					$tr=$('<tr><th>Location</th><td class="fm-location"/></tr>').appendTo($table);
+					$tr.find('.fm-location').text(address.filter(z=>{
+						return z||false;
+					}).join(', '));
+					// }
 					$table.appendTo($el.empty());
 					setTimeout(()=>{
 						$el.closest('.ui-tooltip').css('opacity', 1);
@@ -78,13 +93,13 @@ fm.fns.showJobsCalendar=function() {
 					var obj=ret.obj;
 					customerDetails[type+'_'+id]=obj;
 					var p_id=0;
-					if (+obj.location_id && +obj.location_type==1) {
+					if (+obj.location_id>0 && +obj.location_type==1) {
 						p_id=+ret.obj.location_id;
 					}
 					else if (+obj.owner_id>0) {
 						p_id=+obj.owner_id;
 					}
-					if (p_id) {
+					if (p_id>0) {
 						$.post(fm.url+'Customer_get', fm.fns.getPayLoad({
 							id:p_id
 						}), ret=>{
