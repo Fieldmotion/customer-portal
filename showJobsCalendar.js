@@ -25,18 +25,18 @@ fm.fns.showJobsCalendar=function() {
 					'textColor':'#000'
 				},
 				{	//second event source for asset-related appointments
-					'events': function(start, end, timezone, callback){
+					events: function(start, end, timezone, callback){
 						$.post(fm.url+'Jobs_getCalendarAssets', fm.fns.getPayLoad({'start':start.unix(), 'end':end.unix()}), function(ret) {
 							var assetEvents=$(ret.assetevents);
 							callback(assetEvents);
 						});
 					}, 
-					'backgroundColor': '#385A6B'
+					backgroundColor: '#385A6B'
 				}
 			],
 			eventRender: (event, element)=>{
 				$(element).closest('.fc-event').data('details', event);
-				element.find('.fc-title').prepend($('<span class="fm-job_ref"/>').text(event.job_ref+': '));
+				element.find('.fc-title').prepend($('<span class="fm-job_ref"/>').text(event.cjob_ref+': '));
 			},
 			timeFormat:'H:mm',
 			disableResizing:true
@@ -48,7 +48,7 @@ fm.fns.showJobsCalendar=function() {
 				var $el=$('<div/>').text('...');
 				getCustomerDetails(details.customer_type, details.customer_id, obj=>{
 					var $table=$('<table></table>'), $tr, address;
-					// {
+					// { customer/asset name
 					$tr=$('<tr><th>For</th><td class="fm-job-for"/></tr>').appendTo($table);
 					var forName=obj.name;
 					if (obj.parent) {
@@ -67,6 +67,18 @@ fm.fns.showJobsCalendar=function() {
 					$tr.find('.fm-location').text(address.filter(z=>{
 						return z||false;
 					}).join(', '));
+					// }
+					// { your job ref
+					if (details.cjob_ref) {
+						$tr=$('<tr><th>Your Job Ref</th><td class="fm-cjob_ref"/></tr>').appendTo($table);
+						$tr.find('.fm-cjob_ref').text(details.cjob_ref);
+					}
+					// }
+					// { our job ref
+					if (details.job_ref) {
+						$tr=$('<tr><th>Our Job Ref</th><td class="fm-job_ref"/></tr>').appendTo($table);
+						$tr.find('.fm-job_ref').text(details.job_ref);
+					}
 					// }
 					$table.appendTo($el.empty());
 					setTimeout(()=>{
